@@ -1,0 +1,292 @@
+# universeBlog → SolarNotesFrontend 迁移规划
+
+> 源项目:`/Users/yanglei/Desktop/universeBlog`(原生 JS + Webpack + Three.js)
+> 目标项目:`/Users/yanglei/Desktop/SolarNotesFrontend`(Vue 3 + Vite + Three.js)
+
+## 总览
+
+原项目是一个 **3D 太阳系可视化**,架构要点:
+- Three.js 基础层(renderer / camera / scene / controls / raycaster / axesHelper)
+- 天空球、太阳、8 颗行星(每颗 3 层 Group:Axis / Root / Spin)
+- 后处理:选择性 Bloom(仅太阳发光)
+- 悬停状态机(idle → body → sticky → label)
+- 点击聚焦系统(相机动画 + 二次缓动)
+- UI:label(DOM 标签) + panel(行星面板)
+- 16 个 CSS 文件
+
+迁移核心原则:
+1. **纯 Three.js 逻辑(base / lib / planet / 后处理)→ 直接迁移 JS 模块**,不用 Vue 改写,只把它们作为"引擎"被 Vue 组件调用。
+2. **UI 层(label / panel)→ 改写为 Vue 组件**,利用响应式而非手工 DOM 操作。
+3. **入口 index.js 的生命周期 → 拆到 Vue 组件的 onMounted / onBeforeUnmount**。
+4. **CSS → 放到 `src/assets/styles/`**,按需 import。
+5. **静态资源(GLTF / 贴图)→ 放到 `public/assets/`**(原样访问,路径不变)。
+
+---
+
+## 阶段 0:环境准备
+
+### 任务
+- [ ] 安装依赖:`npm i three @tweenjs/tween.js`
+- [ ] 安装类型提示(可选):`npm i -D @types/three`
+- [ ] 把 `universeBlog/assets/` 整体复制到本工程 `public/assets/`
+  - 原因:GLTF / 贴图 / EXR 属于运行时大资源,不需 Vite 打包,放 `public/` 性能最佳
+  - 路径保持 `assets/earth/scene.gltf` 之类(代码里原来是相对 `assets/xxx` 访问,部署到 `public/` 后 URL 为 `/assets/xxx`,需要全局改一下,见阶段 1)
+- [ ] 在 `src/` 下新建目录骨架:
+  ```
+  src/
+  ├── three/              ← 纯 three.js 逻辑(对应原 src/ 下各模块)
+  │   ├── base/           ← renderer / camera / scene / controls / raycaster / axesHelper
+  │   ├── lib/            ← 工具函数
+  │   ├── planet/         ← 行星工厂
+  │   ├── interaction/    ← hover / focus
+  │   ├── postprocess/    ← bloom 后处理合成器
+  │   ├── skySphere.js
+  │   ├── sun.js
+  │   └── engine.js       ← 总入口(原 index.js 的初始化逻辑)
+  ├── components/
+  │   ├── SolarCanvas.vue ← 挂载渲染容器,调用 engine
+  │   ├── PlanetLabel.vue ← label 的 Vue 化版本
+  │   └── PlanetPanel.vue ← panel 的 Vue 化版本
+  └── assets/
+      └── styles/         ← 迁移 16 个 CSS
+  ```
+
+### 验证
+- `npm run dev` 启动正常,页面不报错。
+- 访问 `http://localhost:5173/assets/earth/scene.gltf` 能下载文件(200 OK),证明静态资源可用。
+
+---
+
+## 阶段 1:迁移 Three.js base 层
+
+### 任务
+- 把 `universeBlog/src/base/*.js` 拷贝到 `src/three/base/`:
+  - `renderer.js` / `camera.js` / `scene.js` / `controls.js` / `axesHelper.js` / `raycaster.js`
+- 把 `universeBlog/src/lib/*.js` 拷贝到 `src/three/lib/`
+- **路径批量修改**:原代码里 `assets/xxx/scene.gltf` → 改为 `/assets/xxx/scene.gltf`(带前导斜杠,指向 public)
+- 保持模块导出方式不变(ES Module),源码中 `import * as THREE from 'three'` 这类路径本工程同样适用
+
+### 验证
+- 先暂时不改 `SolarCanvas.vue`,在控制台手动 `import` 测试:
+  ```js
+  // 浏览器控制台里
+  import('/src/three/base/renderer.js').then(m => console.log(m.renderer))
+  ```
+  能打印出 WebGLRenderer 即可。
+- 或写一个最小测试:在 `SolarCanvas.vue` 里只挂载 renderer 显示一个红色背景,确认三件事齐活:
+  ```js
+  renderer.setClearColor(0xff0000, 1)
+  renderer.render(scene, camera)  // scene 和 camera 也得初始化
+  ```
+  能看到红屏 → base 层就位。
+
+---
+
+## 阶段 2:迁移 lib 工具函数
+
+### 任务
+- 拷贝 `universeBlog/src/lib/*.js` → `src/three/lib/`
+  - `loadGLTF.js`:注意里面的资源路径改成 `/assets/...`
+  - `findAncestorByName.js` / `centerModelToOrigin.js` / `listMeshes.js` / `pointer.js` / `projection.js` / `scalModel.js` / `setShadow.js` / `worldToScreen.js`
+- 这部分大多是**纯函数**,直接粘贴即可
+
+### 验证
+- 单独在控制台测试几个纯函数(如 `loadGLTF('/assets/sun/scene.gltf')` 能 resolve)。
+
+---
+
+## 阶段 3:搭建 Vue 组件骨架 + engine 总入口
+
+### 任务
+- 在 `src/three/engine.js` 新建一个 `initEngine(container)` 函数:
+  - 接收一个 DOM 容器
+  - 内部做:appendChild(renderer.domElement)、初始化场景环境、添加 axesHelper、创建 controls
+  - 返回一个 `dispose()` 函数用于清理(移除事件监听器、解除引用)
+- 改写 `SolarCanvas.vue`:
+  ```vue
+  <script setup>
+  import { ref, onMounted, onBeforeUnmount } from 'vue'
+  import { initEngine } from '@/three/engine.js'
+
+  const container = ref(null)
+  let dispose = null
+
+  onMounted(() => {
+    dispose = initEngine(container.value)
+  })
+
+  onBeforeUnmount(() => {
+    dispose?.()
+  })
+  </script>
+  ```
+
+### 验证
+- 页面上能看到 axesHelper(三色坐标轴)。
+- OrbitControls 拖拽生效,能旋转视角。
+
+---
+
+## 阶段 4:迁移天空球 + 环境贴图
+
+### 任务
+- 拷贝 `universeBlog/src/skySphere.js` → `src/three/skySphere.js`
+- 在 `engine.js` 的初始化流程中调用 `initSkySphereTexture()` / `initSceneEnvironment(renderer)`
+
+### 验证
+- 画面有星空背景。
+- 检查控制台无 404(EXR 和 JPG 都从 `/assets/environment/` 正确加载)。
+
+---
+
+## 阶段 5:迁移太阳 + 8 颗行星
+
+### 任务
+- 拷贝 `universeBlog/src/sun.js` → `src/three/sun.js`
+- 拷贝 `universeBlog/src/planet/` 整个目录 → `src/three/planet/`
+- 在 `engine.js` 中按原 `index.js` 的逻辑依次:
+  ```js
+  await initSun();  scene.add(sunAxis)
+  for (const p of planets) { await p.init(); scene.add(p.axis) }
+  ```
+- **注意**:顶层 await 在 Webpack 下可用,在 Vite 下同样支持。但 Vue 的 `onMounted` 回调是同步的,要么把它改成 `async onMounted(async () => {...})`,要么用 Promise 链。
+
+### 验证(分步)
+- 先只加载太阳 → 画面中心出现太阳。
+- 再依次加载水星 → 海王星 → 看到 8 颗行星绕日。
+- 启动后没有 GLTF 404。
+
+---
+
+## 阶段 6:动画循环
+
+### 任务
+- 在 `engine.js` 里实现 `animate()`,用 `requestAnimationFrame` 调度
+- 返回的 `dispose()` 中 `cancelAnimationFrame`,避免组件销毁后继续渲染(HMR 场景必须处理)
+- 暂时关闭后处理,先用 `renderer.render(scene, camera)` 验证基础渲染
+
+### 验证
+- 行星在动(有自转和公转)。
+- 切换路由 / 刷新 HMR 后,控制台没有"渲染器已失效 / WebGL context lost"之类错误。
+
+---
+
+## 阶段 7:迁移 raycaster + 悬停状态机
+
+### 任务
+- 拷贝 `src/base/raycaster.js` → `src/three/base/raycaster.js`
+- 拷贝 `src/interaction/hover.js` → `src/three/interaction/hover.js`
+- 在 `engine.js` 里注册 pointer 事件监听(挂在 `renderer.domElement` 上,而非 `window`,便于清理)
+- **清理至关重要**:`dispose()` 必须 `removeEventListener`,否则组件反复创建/销毁会内存泄漏
+
+### 验证
+- 鼠标悬停在行星上,控制台打 log 能看到命中。
+- label 暂时还不显示(下阶段迁移)。
+
+---
+
+## 阶段 8:UI 迁移 - label
+
+### 任务
+- 把 `universeBlog/src/ui/label/` 重写为 `components/PlanetLabel.vue`
+  - 原来的手工 DOM 操作(`showLabel`/`hiddenLabel`)改成 `v-if` / props
+  - 位置用 `:style="{ left: x + 'px', top: y + 'px' }"` 绑定
+  - 每帧位置更新:通过 `provide/inject` 或 Pinia 共享状态,由动画循环更新响应式变量
+- CSS(`assets/css/label/*.css`)放 `src/assets/styles/label/` 并 `import` 到 `PlanetLabel.vue`(scoped 或全局,按需)
+
+### 验证
+- 悬停行星时,label 正确出现在行星旁。
+- 鼠标按滞回逻辑移动,label 不闪烁。
+
+---
+
+## 阶段 9:UI 迁移 - panel(聚焦面板)
+
+### 任务
+- 点击聚焦系统:`src/interaction/focus.js` → `src/three/interaction/focus.js`(相机动画保持 JS 实现)
+- `universeBlog/src/ui/panel.js` → `components/PlanetPanel.vue`
+  - 面板内容通过 props 传入(行星名、描述、图片)
+  - 显隐通过响应式状态控制
+- CSS(`assets/css/panel/*.css`)放 `src/assets/styles/panel/`
+
+### 验证
+- 点击行星:相机动到右半屏,左侧面板出现。
+- 点击空白处:面板消失,相机归位。
+
+---
+
+## 阶段 10:后处理(选择性 Bloom)
+
+### 任务
+- 新建 `src/three/postprocess/bloom.js`,把原 `index.js` 里 bloomComposer / finalComposer / darkenNonBloomed / restoreMaterial 的逻辑抽出来
+- 在 `engine.js` 的 `animate()` 里切到 `finalComposer.render()` 流程
+- window resize 时别忘了 `setSize` 两个 composer(原代码的逻辑直接搬)
+
+### 验证
+- 太阳有辉光效果,其他行星不发光。
+- 改变窗口大小,辉光范围跟随调整,不变形。
+
+---
+
+## 阶段 11:CSS 全量迁移
+
+### 任务
+- `universeBlog/assets/css/` 下 16 个 CSS → `src/assets/styles/`
+- 按原 `index.js` 的引入顺序,在 `App.vue` 或组件内 import
+- 字体文件(`universeBlog/assets/fonts/`)整体复制到 `public/fonts/`,修正 `@font-face` 里的 `src: url(...)` 路径为 `/fonts/xxx.woff2`
+- `reset.css` 的内容可合并到已有的 `src/assets/reset.css`
+
+### 验证
+- 字体正确加载(Network 面板无 404)。
+- label / panel 外观与原项目一致。
+
+---
+
+## 阶段 12:响应式窗口 + 资源释放
+
+### 任务
+- `engine.js` 里监听 `window.resize` 更新 camera aspect、renderer size、composer size
+- `dispose()` 完整实现:
+  - 移除所有事件监听器
+  - `cancelAnimationFrame`
+  - `renderer.dispose()`、`composer.dispose()`、纹理/几何体 dispose(遍历 scene)
+- 在 Vite HMR 下确保:编辑一个文件后,旧的 WebGL context 能被销毁(`renderer.forceContextLoss()`)
+
+### 验证
+- 连续 HMR 10 次,浏览器 GPU 内存不持续上涨。
+- 开多标签页切换,不出现 "Too many active WebGL contexts" 报错。
+
+---
+
+## 阶段 13:最终验收清单
+
+- [ ] 8 颗行星公转 + 自转正常
+- [ ] 鼠标悬停 → label 出现 + 行星停止公转
+- [ ] 鼠标离开但在 sticky 区域内 → label 仍保持
+- [ ] 点击行星 → 相机聚焦 + panel 弹出
+- [ ] 点击空白 → 取消聚焦,animate 正常
+- [ ] 太阳辉光正常,其他行星无辉光
+- [ ] 窗口缩放画面自适应不变形
+- [ ] 切换路由(若有)或刷新,无内存泄漏、无 WebGL 错误
+- [ ] 生产构建 `npm run build` 产物无 DevTools 残留(已通过 vite.config.js 配置保证)
+
+---
+
+## 风险与注意事项
+
+1. **顶层 await**:Vite 支持,但 `onMounted` 内部要么用 async 回调,要么链式 Promise,不能在 setup 顶层阻塞。
+2. **字体 / 贴图路径**:从 `assets/xxx` → `/assets/xxx`,必须全局替换,建议一次性 `grep -r "assets/" src/` 检查。
+3. **事件监听器清理**:所有 `addEventListener` 都必须在 `dispose()` 中 `removeEventListener`,否则热更新会累积。
+4. **模块级单例**:原 `renderer.js` 模块顶层 `new WebGLRenderer()` 是单例,HMR 时要避免创建多个。推荐改为**函数工厂**模式(`createRenderer()`),由 `engine.js` 调用一次,便于测试和销毁。
+5. **状态管理**:目前看不需要 Pinia,用 `provide/inject` 或一个模块级单例 state 足够;若后续 UI 复杂可引入 Pinia。
+
+---
+
+## 推荐实施节奏
+
+每个阶段完成后:
+1. 提交一个 git commit(信息如 `feat: migrate three.js base layer`)
+2. 启动 `npm run dev` 手动验收,截图记录
+3. 发现问题就地修复,再进入下一阶段
+
+**不要一次性迁移全部**。每完成一个阶段就看到可见进展,迁移 3D 项目最怕的是"一步跨太大,出错定位困难"。
