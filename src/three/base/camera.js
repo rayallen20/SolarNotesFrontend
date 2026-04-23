@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {layers} from "@/three/base/layers.js";
 
 /**
  * @type {Object} 透视相机的配置对象
@@ -39,3 +40,6 @@ camera.position.set(
 
 // 设置相机朝向
 camera.lookAt(config.lookAt)
+
+// 设置相机渲染图层
+camera.layers.enable(layers.outerPlanets)

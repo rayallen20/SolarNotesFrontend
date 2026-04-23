@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" font-family="-apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif">
+  <style>
+    .panel-title { font-size: 15px; font-weight: 600; fill: #1f2937; }
+    .sub-title { font-size: 12px; fill: #6b7280; }
+    .axis-label { font-size: 11px; fill: #6b7280; }
+    .coord-label { font-size: 11px; fill: #374151; }
+    .explanation { font-size: 12px; fill: #1f2937; }
+    .axis-line { stroke: #9ca3af; stroke-width: 1; }
+    .bbox { fill: none; stroke: #dc2626; stroke-width: 1.5; stroke-dasharray: 5 3; }
+    .model { fill: #fbbf24; fill-opacity: 0.6; stroke: #d97706; stroke-width: 1; }
+    .corner { fill: #dc2626; }
+    .origin { fill: #16a34a; }
+  </style>
+  <defs>
+    <marker id="axarr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 6 3, 0 6" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <text x="480" y="28" text-anchor="middle" font-size="17" font-weight="700" fill="#111">
+    本地包围盒 vs 世界包围盒(同一个模型,model.scale = 4)
+  </text>
+
+  <!-- Left Panel: Local BBox -->
+  <g transform="translate(30, 60)">
+    <text x="210" y="20" text-anchor="middle" class="panel-title">本地包围盒(local bounding box)</text>
+    <text x="210" y="38" text-anchor="middle" class="sub-title">只看 geometry 原始顶点,不含任何变换</text>
+
+    <!-- Axes -->
+    <line x1="40" y1="330" x2="400" y2="330" class="axis-line" marker-end="url(#axarr)"/>
+    <line x1="40" y1="330" x2="40" y2="60" class="axis-line" marker-end="url(#axarr)"/>
+    <text x="405" y="334" class="axis-label">X</text>
+    <text x="32" y="58" class="axis-label">Y</text>
+    <circle cx="40" cy="330" r="4" class="origin"/>
+    <text x="50" y="346" class="coord-label">原点</text>
+
+    <!-- Model: circle (radius 40), center offset (100, 80) -->
+    <!-- panel coord: (40+100, 330-80) = (140, 250) -->
+    <circle cx="140" cy="250" r="40" class="model"/>
+    <!-- BBox around circle: 80x80 -->
+    <rect x="100" y="210" width="80" height="80" class="bbox"/>
+
+    <!-- min/max corners -->
+    <circle cx="100" cy="290" r="3.5" class="corner"/>
+    <text x="60" y="308" class="coord-label" fill="#991b1b">min (60, 40)</text>
+    <circle cx="180" cy="210" r="3.5" class="corner"/>
+    <text x="186" y="208" class="coord-label" fill="#991b1b">max (140, 120)</text>
+
+    <text x="40" y="380" class="explanation">box.getSize()   = (80, 80, 80)</text>
+    <text x="40" y="398" class="explanation">box.getCenter() = (100, 80, 0)</text>
+  </g>
+
+  <!-- Right Panel: World BBox (after scale=4) -->
+  <g transform="translate(500, 60)">
+    <text x="210" y="20" text-anchor="middle" class="panel-title">世界包围盒(world bounding box)</text>
+    <text x="210" y="38" text-anchor="middle" class="sub-title">顶点 × matrixWorld,反映"眼睛看到的实际大小"</text>
+
+    <!-- Axes -->
+    <line x1="40" y1="330" x2="400" y2="330" class="axis-line" marker-end="url(#axarr)"/>
+    <line x1="40" y1="330" x2="40" y2="60" class="axis-line" marker-end="url(#axarr)"/>
+    <text x="405" y="334" class="axis-label">X</text>
+    <text x="32" y="58" class="axis-label">Y</text>
+    <circle cx="40" cy="330" r="4" class="origin"/>
+
+    <!-- Model after scale=4: radius 40 × 0.5 (to fit panel), but conceptually 4x bigger
+         offset (100,80) also × 4 in principle, but we compress visually for display.
+         Just draw a much larger circle + much larger bbox here. -->
+    <!-- Let's use a visual scale ratio 1.9x instead of 4x for fit -->
+    <circle cx="215" cy="180" r="76" class="model"/>
+    <rect x="139" y="104" width="152" height="152" class="bbox"/>
+
+    <circle cx="139" cy="256" r="3.5" class="corner"/>
+    <text x="60" y="275" class="coord-label" fill="#991b1b">min (240, 160)</text>
+    <circle cx="291" cy="104" r="3.5" class="corner"/>
+    <text x="296" y="102" class="coord-label" fill="#991b1b">max (560, 480)</text>
+
+    <text x="40" y="380" class="explanation">box.getSize()   = (320, 320, 320)   ← 4 倍</text>
+    <text x="40" y="398" class="explanation">box.getCenter() = (400, 320, 0)     ← 也放大 4 倍</text>
+  </g>
+
+  <!-- Bottom summary -->
+  <g transform="translate(0, 420)">
+    <rect x="30" y="0" width="900" height="32" fill="#f3f4f6" rx="4"/>
+    <text x="480" y="22" text-anchor="middle" font-size="13" fill="#111">
+      <tspan font-weight="700">记住:</tspan>
+      `setFromObject()` 求的是 <tspan font-weight="700" fill="#dc2626">世界</tspan> 包围盒 —— 它随 scale / rotation / position 而变,这正是居中、缩放算法需要的那个"视觉上看到的盒子"
+    </text>
+  </g>
+</svg>
