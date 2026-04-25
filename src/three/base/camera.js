@@ -24,7 +24,7 @@ const config = {
  * @type {import('three').PerspectiveCamera}
  * Tips: 参数示意见@/docs/explain/PerspectiveCamera.png
  * */
-export const camera = new THREE.PerspectiveCamera(
+const camera = new THREE.PerspectiveCamera(
     config.fov,
     config.aspect,
     config.near,
@@ -43,3 +43,18 @@ camera.lookAt(config.lookAt)
 
 // 设置相机渲染图层
 camera.layers.enable(layers.outerPlanets)
+
+/**
+ * 本函数用于重置相机宽高比
+ * @param {Number} width 视口宽度
+ * @param {Number} height 视口高度
+ * */
+function resizeCamera(width, height) {
+    camera.aspect = width / height
+    camera.updateProjectionMatrix()
+}
+
+export {
+    camera,
+    resizeCamera,
+}

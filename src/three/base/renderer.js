@@ -4,7 +4,7 @@ import * as THREE from 'three'
  * 本常量用于定义渲染器实例
  * @type {import('three').WebGLRenderer}
  * */
-export const renderer = new THREE.WebGLRenderer()
+const renderer = new THREE.WebGLRenderer()
 
 // 开启阴影贴图
 renderer.shadowMap.enabled = true
@@ -22,3 +22,17 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping
 renderer.toneMappingExposure = 1.2
 
 renderer.setSize(window.innerWidth, window.innerHeight)
+
+/**
+ * 本函数用于重置渲染器尺寸
+ * @param {Number} width 视口宽度
+ * @param {Number} height 视口高度
+ * */
+function resizeRenderer(width, height) {
+    renderer.setSize(width, height)
+}
+
+export {
+    renderer,
+    resizeRenderer,
+}

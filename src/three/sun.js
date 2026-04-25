@@ -55,15 +55,15 @@ import {layers} from "@/three/base/layers.js";
  * @property {Number} light.shadowTone.groundColor 阴影色调光源的地面颜色 (纯黑色即可,因为几乎不需要)
  * @property {Number} light.shadowTone.intensity 阴影色调光源强度 (建议在 [0.12, 0.35] 范围内)
  * @property {import('three').Vector3} light.shadowTone.position 阴影色调光源位置 (阴影色调光源的位置不会影响照明效果,但建议放在原点以保持一致性)
- * @property {Object} light.blackLift 黒位提升光源配置,用于模拟太空中的全局微弱环境光
- *      Tips: 黒位提升光源的作用是为了给外行星一个极微弱的全局底色,消除完全黑色的像素,
+ * @property {Object} light.blackLift 黑位提升光源配置,用于模拟太空中的全局微弱环境光
+ *      Tips: 黑位提升光源的作用是为了给外行星一个极微弱的全局底色,消除完全黑色的像素,
  *      Tips: 让贴图的暗部细节(例如土星环的暗面/木星条纹的阴影部分)不至于成为纯黑色,
  *      Tips: 而是有一些冷色调的颜色,增加视觉效果
- *      Tips: 可以认为黒位提升光源用于让整个场景中不会存在完全黑色的像素
- *      Tips: blackLift一词借用电影调色属于"lift the blacks",表示把画面最低亮度从纯黑抬升一点的意思
- * @property {Number} light.blackLift.color 黒位提升光源颜色 (冷色调的颜色,模拟太空中的微弱环境光)
- * @property {Number} light.blackLift.intensity 黒位提升光源强度 (建议在 [0.01, 0.06] 范围内)
- * @property {import('three').Vector3} light.blackLift.position 黒位提升光源位置
+ *      Tips: 可以认为黑位提升光源用于让整个场景中不会存在完全黑色的像素
+ *      Tips: blackLift一词借用电影调色术语"lift the blacks",表示把画面最低亮度从纯黑抬升一点的意思
+ * @property {Number} light.blackLift.color 黑位提升光源颜色 (冷色调的颜色,模拟太空中的微弱环境光)
+ * @property {Number} light.blackLift.intensity 黑位提升光源强度 (建议在 [0.01, 0.06] 范围内)
+ * @property {import('three').Vector3} light.blackLift.position 黑位提升光源位置
  * @property {import('three').Vector3} position 太阳位置
  * @property {Object} label 太阳标签相关配置
  * @property {String} label.bodyType 标签的天体类型,用于区分不同类型天体的标签样式
@@ -366,10 +366,10 @@ function createShadowToneLight() {
  * */
 function createBlackLiftLight() {
     // 光源配置
-    const blackLiftConfig = config.light.blackLift
+    const blackLiftLightConfig = config.light.blackLift
     const blackLiftLight = new THREE.AmbientLight(
-        blackLiftConfig.color,
-        blackLiftConfig.intensity,
+        blackLiftLightConfig.color,
+        blackLiftLightConfig.intensity,
     )
 
     // 图层配置
@@ -377,9 +377,9 @@ function createBlackLiftLight() {
 
     // 位置配置
     blackLiftLight.position.set(
-        blackLiftConfig.position.x,
-        blackLiftConfig.position.y,
-        blackLiftConfig.position.z,
+        blackLiftLightConfig.position.x,
+        blackLiftLightConfig.position.y,
+        blackLiftLightConfig.position.z,
     )
 
     return blackLiftLight
