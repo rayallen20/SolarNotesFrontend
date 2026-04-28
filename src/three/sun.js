@@ -4,6 +4,7 @@ import {scaleModel} from "@/three/lib/scaleModel.js";
 import {centerModelToOrigin} from "@/three/lib/centerModelToOrigin.js";
 import {listMeshes} from "@/three/lib/listMeshes.js";
 import {layers} from "@/three/base/layers.js";
+import {bodyType} from "@/three/enum.js";
 
 /**
  * 本常量用于定义太阳相关配置
@@ -66,7 +67,7 @@ import {layers} from "@/three/base/layers.js";
  * @property {import('three').Vector3} light.blackLift.position 黑位提升光源位置
  * @property {import('three').Vector3} position 太阳位置
  * @property {Object} label 太阳标签相关配置
- * @property {String} label.bodyType 标签的天体类型,用于区分不同类型天体的标签样式
+ * @property {bodyType} label.bodyType 标签的天体类型,用于区分不同类型天体的标签样式
  * @property {String} label.name 标签显示的名称
  * @property {String} label.intro 标签显示的介绍文字
  * */
@@ -129,7 +130,7 @@ const config = {
     },
     position: new THREE.Vector3(0, 0, 0),
     label: {
-        bodyType: 'sun',
+        bodyType: bodyType.sun,
         name: '太阳',
         intro: '一段太阳的介绍文字'
     }

@@ -5,6 +5,7 @@ import {createOrbitControls} from "@/three/base/controls.js";
 import {camera, resizeCamera} from "@/three/base/camera.js";
 import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from "@/three/sun.js";
 import {disposeBloom, initComposers, markAsBloomObject, renderBloomFrame, resizeBloom} from "@/three/postProcess.js";
+import {initPlanets, planets, updatePlanets} from "@/three/planet/index.js";
 
 /**
  * @type {Number|null} 当前动画循环的requestAnimationFrame句柄
@@ -23,6 +24,7 @@ let controls = null
  *      2.1 场景环境贴图
  *      2.2 天空球
  *      2.3 太阳
+ *      2.4 行星
  * 3. 加载坐标辅助线(仅开发模式下)
  * 4. 创建轨道控制器
  * 5. 加载后期管线相关功能:
@@ -40,14 +42,17 @@ export async function initEngine (container) {
     // 2. 初始化
     // 2.1 场景环境贴图
     await initSceneEnvironment(renderer)
-
     // 2.2 天空球
     await initSkySphereTexture()
     scene.add(skySphere)
-
     // 2.3 太阳
     await initSun()
     scene.add(sunAxis)
+    // 2.4 行星
+    await initPlanets()
+    for (const planet of planets) {
+        scene.add(planet.axis)
+    }
 
     // 3. 加载坐标辅助线(仅开发模式下)
     if (import.meta.env.DEV) {
@@ -77,8 +82,9 @@ export async function initEngine (container) {
  * 本函数用于逐帧更新场景并渲染:
  * 1. 更新天空球的自转
  * 2. 更新太阳的自转
- * 3. 更新控制器
- * 4. 渲染辉光效果
+ * 3. 更新行星的公转和自转
+ * 4. 更新控制器
+ * 5. 渲染辉光效果
  * */
 function startAnimation () {
     rafId = requestAnimationFrame(startAnimation)
@@ -89,10 +95,13 @@ function startAnimation () {
     // 2. 更新太阳的自转
     setSunAutoRotation()
 
-    // 3. 更新控制器
+    // 3. 更新行星的公转和自转
+    updatePlanets(true)
+
+    // 4. 更新控制器
     controls.update()
 
-    // 4. 渲染辉光效果
+    // 5. 渲染辉光效果
     renderBloomFrame()
 }
 

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 510" style="background:#fafafa">
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; }
+    .title { font-size: 22px; font-weight: bold; }
+    .subtitle { font-size: 16px; font-weight: bold; }
+    .label { font-size: 13px; }
+    .caption { font-size: 12px; fill: #555; }
+    .formula { font-size: 14px; font-weight: bold; }
+  </style>
+
+  <text x="380" y="35" text-anchor="middle" class="title">角度(degree) vs 弧度(radian)</text>
+
+  <!-- 左:角度 -->
+  <g transform="translate(190, 240)">
+    <text x="0" y="-180" text-anchor="middle" class="subtitle" fill="#c44">角度 — 整圆均分 360 份</text>
+
+    <circle cx="0" cy="0" r="110" fill="none" stroke="#333" stroke-width="1.5"/>
+
+    <g stroke="#aaa" stroke-width="0.5">
+      <line x1="0" y1="0" x2="110" y2="0"/>
+      <line x1="0" y1="0" x2="0" y2="-110"/>
+      <line x1="0" y1="0" x2="-110" y2="0"/>
+      <line x1="0" y1="0" x2="0" y2="110"/>
+    </g>
+
+    <text x="118" y="5" class="label">0° / 360°</text>
+    <text x="0" y="-120" text-anchor="middle" class="label">90°</text>
+    <text x="-118" y="5" text-anchor="end" class="label">180°</text>
+    <text x="0" y="135" text-anchor="middle" class="label">270°</text>
+
+    <!-- 10° 楔形(为了能看见,放大演示) -->
+    <path d="M 0 0 L 110 0 A 110 110 0 0 0 108.33 -19.10 Z" fill="#ff6b35" opacity="0.5"/>
+    <text x="65" y="-22" class="label" fill="#c44" font-weight="bold">10°(夸大显示)</text>
+
+    <circle cx="0" cy="0" r="3" fill="#333"/>
+
+    <text x="0" y="170" text-anchor="middle" class="caption">起源:历史约定(巴比伦 60 进制)</text>
+    <text x="0" y="187" text-anchor="middle" class="caption">优点:好整除(360 = 2³·3²·5)</text>
+    <text x="0" y="204" text-anchor="middle" class="caption">用途:人类读写、地图、工程图</text>
+  </g>
+
+  <line x1="380" y1="60" x2="380" y2="450" stroke="#ccc" stroke-dasharray="6 4"/>
+
+  <!-- 右:弧度 -->
+  <g transform="translate(560, 240)">
+    <text x="0" y="-180" text-anchor="middle" class="subtitle" fill="#0a8">弧度 — 弧长 ÷ 半径</text>
+
+    <circle cx="0" cy="0" r="110" fill="none" stroke="#333" stroke-width="1.5"/>
+
+    <!-- 1 rad 楔形;1 rad ≈ 57.3°,端点 = (110·cos1, -110·sin1) ≈ (59.43, -92.57) -->
+    <path d="M 0 0 L 110 0 A 110 110 0 0 0 59.43 -92.57 Z" fill="#4ecdc4" opacity="0.35"/>
+
+    <line x1="0" y1="0" x2="110" y2="0" stroke="#333" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="59.43" y2="-92.57" stroke="#333" stroke-width="1.5"/>
+
+    <!-- 弧线高亮 -->
+    <path d="M 110 0 A 110 110 0 0 0 59.43 -92.57" fill="none" stroke="#e94560" stroke-width="3"/>
+
+    <text x="55" y="18" class="label">r</text>
+    <text x="22" y="-46" class="label">r</text>
+    <text x="105" y="-58" class="label" fill="#c00" font-weight="bold">弧长 = r</text>
+    <text x="38" y="-12" class="label" fill="#085" font-weight="bold">1 rad</text>
+    <text x="38" y="3" class="caption" fill="#085">≈ 57.3°</text>
+
+    <circle cx="0" cy="0" r="3" fill="#333"/>
+
+    <text x="0" y="170" text-anchor="middle" class="caption">起源:几何定义(无量纲比值)</text>
+    <text x="0" y="187" text-anchor="middle" class="caption">优点:数学公式天然成立(微积分干净)</text>
+    <text x="0" y="204" text-anchor="middle" class="caption">用途:Math.sin/cos、Three.js Euler</text>
+  </g>
+
+  <!-- 底部换算公式 -->
+  <g transform="translate(380, 475)">
+    <rect x="-340" y="-22" width="680" height="40" rx="6" fill="#fff8dc" stroke="#daa520"/>
+    <text x="0" y="6" text-anchor="middle" class="formula">
+      整圆 = 360° = 2π rad   ⇒   1 rad ≈ 57.296°,   1° = π / 180 ≈ 0.01745 rad
+    </text>
+  </g>
+</svg>

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { EXRLoader } from 'three/addons/loaders/EXRLoader'
+import {EXRLoader} from "three/examples/jsm/loaders/EXRLoader.js";
+
 
 /**
  * 本函数用于返回一个Promise对象 该Promise用于加载EXR格式的环境贴图
