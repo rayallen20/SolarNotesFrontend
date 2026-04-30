@@ -36,44 +36,58 @@ let controls = null
  * @return {Function} 销毁函数
  * */
 export async function initEngine (container) {
-    // 1. 创建canvas对象并挂载到给定的容器DOM中
-    container.appendChild(renderer.domElement)
+    try {
+        // 1. 创建canvas对象并挂载到给定的容器DOM中
+        container.appendChild(renderer.domElement)
 
-    // 2. 初始化
-    // 2.1 场景环境贴图
-    await initSceneEnvironment(renderer)
-    // 2.2 天空球
-    await initSkySphereTexture()
-    scene.add(skySphere)
-    // 2.3 太阳
-    await initSun()
-    scene.add(sunAxis)
-    // 2.4 行星
-    await initPlanets()
-    for (const planet of planets) {
-        scene.add(planet.axis)
+        // 2. 初始化
+        // 2.1 场景环境贴图
+        await initSceneEnvironment(renderer)
+        // 2.2 天空球
+        await initSkySphereTexture()
+        scene.add(skySphere)
+        // 2.3 太阳
+        await initSun()
+        scene.add(sunAxis)
+        // 2.4 行星
+        await initPlanets()
+        for (const planet of planets) {
+            scene.add(planet.axis)
+        }
+
+        // 3. 加载坐标辅助线(仅开发模式下)
+        if (import.meta.env.DEV) {
+            const {axesHelper} = await import('@/three/base/axisHelper.js')
+            scene.add(axesHelper)
+        }
+
+        // 4. 创建轨道控制器
+        controls = createOrbitControls(camera, renderer.domElement)
+
+        // 5. 加载后期管线相关功能
+        // 5.1 初始化后期处理管线
+        initComposers()
+        // 5.2 为太阳设置辉光图层
+        markAsBloomObject(sunAxis)
+
+        // 6. 监听视口大小变化
+        window.addEventListener('resize', onWindowResize)
+
+        // 7. 启动动画循环
+        startAnimation()
+    } catch (err) {
+        // 清理资源
+        dispose()
+
+        // 将canvas元素从DOM树中移除
+        renderer.domElement.remove()
+
+        // 清空场景
+        scene.clear()
+
+        // 抛出异常
+        throw err
     }
-
-    // 3. 加载坐标辅助线(仅开发模式下)
-    if (import.meta.env.DEV) {
-        const {axesHelper} = await import('@/three/base/axisHelper.js')
-        scene.add(axesHelper)
-    }
-
-    // 4. 创建轨道控制器
-    controls = createOrbitControls(camera, renderer.domElement)
-
-    // 5. 加载后期管线相关功能
-    // 5.1 初始化后期处理管线
-    initComposers()
-    // 5.2 为太阳设置辉光图层
-    markAsBloomObject(sunAxis)
-
-    // 6. 监听视口大小变化
-    window.addEventListener('resize', onWindowResize)
-
-    // 7. 启动动画循环
-    startAnimation()
 
     return dispose
 }

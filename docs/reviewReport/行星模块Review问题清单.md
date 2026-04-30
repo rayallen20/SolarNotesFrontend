@@ -2,9 +2,9 @@
 
 > Review 日期:2026-04-28
 > 范围:8 颗行星的公转和自转首次实现完成后(原工程中"为外行星补光"的部分尚未实现)
-> 参考设计文档:`docs/planet-refactor-guide.md`
+> 参考设计文档:`docs/design/行星模块重构指南.md`
 
-## Review 范围
+## 1. Review 范围
 
 涉及文件:
 - `src/three/planet/planet.js` —— 单颗行星模块
@@ -20,9 +20,9 @@
 
 ---
 
-## 🔴 严重问题(必须修)
+## 2. 🔴 严重问题(必须修)
 
-### ① `startAnimation` 中 `updatePlanets` 在 `renderBloomFrame` 之后
+### 2.1 `startAnimation` 中 `updatePlanets` 在 `renderBloomFrame` 之后
 
 **位置**:`src/three/engine.js` line 89-106
 
@@ -64,7 +64,7 @@ JSDoc 注释里的顺序也对应改。
 
 ---
 
-### ② `autoRotation.js` 不能处理负旋转速度(金星)
+### 2.2 `autoRotation.js` 不能处理负旋转速度(金星)
 
 **位置**:`src/three/planet/helper/autoRotation.js`
 
@@ -122,7 +122,7 @@ JS 的 `%` 是「截断取余」,结果符号跟被除数相同:
 
 ---
 
-### ③ `revolution.js` 角度规约同样有 reset 顺序 bug
+### 2.3 `revolution.js` 角度规约同样有 reset 顺序 bug
 
 **位置**:`src/three/planet/helper/revolution.js` line 12-15
 
@@ -153,7 +153,7 @@ if (planet.orbitAngle >= Math.PI * 2) {
 
 ---
 
-### ④ Neptune 的命名是 PascalCase,与其他 7 颗不一致
+### 2.4 Neptune 的命名是 PascalCase,与其他 7 颗不一致
 
 **位置**:`src/three/planet/config.js` line 192-196
 
@@ -181,9 +181,9 @@ spinName: 'neptuneSpin',
 
 ---
 
-## 🟡 中等问题
+## 3. 🟡 中等问题
 
-### ⑤ `orbitAngle` 单位 JSDoc 错误:写的是"角度",实际是"弧度"
+### 3.1 `orbitAngle` 单位 JSDoc 错误:写的是"角度",实际是"弧度"
 
 **位置**:
 - `src/three/planet/planet.js` line 19
@@ -206,7 +206,7 @@ spinName: 'neptuneSpin',
 
 ---
 
-### ⑥ `bodyType` 枚举使用不一致——只有 Mercury 用了 enum
+### 3.2 `bodyType` 枚举使用不一致——只有 Mercury 用了 enum
 
 **位置**:`src/three/planet/config.js`
 
@@ -225,7 +225,7 @@ label: { bodyType: 'planet', ... }          // ❌ 字面量
 
 ---
 
-### ⑦ typo:"自传层" 应该是 "自转层"
+### 3.3 typo:"自传层" 应该是 "自转层"
 
 **位置**:`src/three/planet/planet.js` line 17
 
@@ -242,9 +242,9 @@ label: { bodyType: 'planet', ... }          // ❌ 字面量
 
 ---
 
-## 🟢 微调建议(非必须)
+## 4. 🟢 微调建议(非必须)
 
-### ⑧ 导出函数命名不一致
+### 4.1 导出函数命名不一致
 
 **位置**:`src/three/planet/planet.js` line 142-147
 
@@ -266,7 +266,7 @@ export {
 
 ---
 
-### ⑨ `index.js` 缺 `getAllPickableMeshes()`
+### 4.2 `index.js` 缺 `getAllPickableMeshes()`
 
 **位置**:`src/three/planet/index.js`
 
@@ -296,7 +296,7 @@ export {
 
 ---
 
-### ⑩ `initPlanet` JSDoc 缺 `@param`
+### 4.3 `initPlanet` JSDoc 缺 `@param`
 
 **位置**:`src/three/planet/planet.js` line 63-77
 
@@ -306,7 +306,7 @@ export {
 
 ---
 
-### ⑪ `orbitPath.js` 内部有 `config` 变量,与 `planet.config` 容易混淆
+### 4.4 `orbitPath.js` 内部有 `config` 变量,与 `planet.config` 容易混淆
 
 **位置**:`src/three/planet/helper/orbitPath.js` line 12-18
 
@@ -331,7 +331,7 @@ export function createOrbitPath(planet) {
 
 ---
 
-### ⑫ helper 内 `@param {Planet}` 跨文件 typedef 引用
+### 4.5 helper 内 `@param {Planet}` 跨文件 typedef 引用
 
 **位置**:`src/three/planet/helper/*.js`
 
@@ -348,7 +348,7 @@ export function createOrbitPath(planet) {
 
 ---
 
-## 建议修复顺序
+## 5. 建议修复顺序
 
 按下面顺序最自然(先改严重 bug,再改一致性,最后微调):
 
@@ -368,7 +368,7 @@ export function createOrbitPath(planet) {
 
 ---
 
-## 修复后验证
+## 6. 修复后验证
 
 启动 dev server 后目测:
 

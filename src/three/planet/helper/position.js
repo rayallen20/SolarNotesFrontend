@@ -20,10 +20,21 @@ function initOrbitalGroupPosition(planet) {
  * @return {{x: Number, z: Number}} 返回行星在轨道上的位置坐标
  * */
 function calcOrbitalGroupPosition(rad, semiMajorAxis, eccentricity) {
-    const b = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity)
+    // 根据离心率和半长轴 计算半短轴长度
+    const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity)
 
+    // 椭圆参数方程:
+    // x = a * cos(t)
+    // y = b * sin(t)
+
+    // 但是本场景是要让太阳这个本来是F1的点作为中心点C,因此需要让椭圆整体向右移动 移动长度为c(c表示中心点到焦点的距离)
+    // 而 c = a * e
+    // 因此 x = a ( cos(t) - e)
+    // 而代码中的z其实就是椭圆计算公式中的y 只是THREE.js用XZ表示水平面
+
+    // 这里不计算y,是因为3D场景中垂直方向上的变化是通过轨道倾角来实现的,而不是通过改变y坐标来实现的
     const x = semiMajorAxis * (Math.cos(rad) - eccentricity)
-    const z = b * Math.sin(rad)
+    const z = semiMinorAxis * Math.sin(rad)
 
     return {x, z}
 }

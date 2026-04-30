@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" font-family="-apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 510" font-family="-apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif">
   <style>
     .panel-title { font-size: 15px; font-weight: 600; fill: #1f2937; }
     .sub-title { font-size: 12px; fill: #6b7280; }
@@ -79,7 +79,7 @@
   </g>
 
   <!-- Bottom summary -->
-  <g transform="translate(0, 420)">
+  <g transform="translate(0, 470)">
     <rect x="30" y="0" width="900" height="32" fill="#f3f4f6" rx="4"/>
     <text x="480" y="22" text-anchor="middle" font-size="13" fill="#111">
       <tspan font-weight="700">记住:</tspan>

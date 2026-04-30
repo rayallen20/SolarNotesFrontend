@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 580" style="background:#fafafa">
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; }
+    .title { font-size: 20px; font-weight: bold; }
+    .label { font-size: 14px; }
+    .small { font-size: 12px; fill: #555; }
+    .formula { font-size: 14px; font-weight: bold; }
+  </style>
+
+  <text x="400" y="30" text-anchor="middle" class="title">行星椭圆轨道:几何参数与位置公式</text>
+
+  <!-- 辅助圆(半径 = a,中心同椭圆) -->
+  <circle cx="400" cy="300" r="250" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+  <text x="660" y="295" class="small" fill="#888">辅助圆</text>
+  <text x="660" y="310" class="small" fill="#888">(半径 = a)</text>
+
+  <!-- 椭圆 -->
+  <ellipse cx="400" cy="300" rx="250" ry="200" fill="none" stroke="#333" stroke-width="2"/>
+
+  <!-- 长轴 -->
+  <line x1="150" y1="300" x2="650" y2="300" stroke="#aaa" stroke-dasharray="4 3"/>
+  <!-- 短轴 -->
+  <line x1="400" y1="100" x2="400" y2="500" stroke="#aaa" stroke-dasharray="4 3"/>
+
+  <!-- 标 a (从 C 到近日点) -->
+  <line x1="400" y1="278" x2="650" y2="278" stroke="#0a8" stroke-width="1.5"/>
+  <line x1="400" y1="273" x2="400" y2="283" stroke="#0a8" stroke-width="1.5"/>
+  <line x1="650" y1="273" x2="650" y2="283" stroke="#0a8" stroke-width="1.5"/>
+  <text x="525" y="270" text-anchor="middle" class="label" fill="#0a8" font-weight="bold">a (半长轴)</text>
+
+  <!-- 标 b (从 C 到椭圆顶点) -->
+  <line x1="378" y1="100" x2="378" y2="300" stroke="#0a8" stroke-width="1.5"/>
+  <line x1="373" y1="100" x2="383" y2="100" stroke="#0a8" stroke-width="1.5"/>
+  <line x1="373" y1="300" x2="383" y2="300" stroke="#0a8" stroke-width="1.5"/>
+  <text x="370" y="205" text-anchor="end" class="label" fill="#0a8" font-weight="bold">b (半短轴)</text>
+
+  <!-- 标 c (从 C 到 F1) -->
+  <line x1="400" y1="322" x2="550" y2="322" stroke="#c44" stroke-width="1.5"/>
+  <line x1="400" y1="317" x2="400" y2="327" stroke="#c44" stroke-width="1.5"/>
+  <line x1="550" y1="317" x2="550" y2="327" stroke="#c44" stroke-width="1.5"/>
+  <text x="475" y="338" text-anchor="middle" class="label" fill="#c44" font-weight="bold">c = a·e</text>
+
+  <!-- 中心 C -->
+  <circle cx="400" cy="300" r="3" fill="#666"/>
+  <text x="395" y="318" text-anchor="end" class="small">C(中心)</text>
+
+  <!-- F1(太阳) -->
+  <circle cx="550" cy="300" r="9" fill="#ffd700" stroke="#daa520" stroke-width="2"/>
+  <text x="562" y="296" class="label">F₁(太阳)</text>
+
+  <!-- F2(空焦点) -->
+  <circle cx="250" cy="300" r="4" fill="none" stroke="#666" stroke-width="1.5"/>
+  <text x="244" y="296" text-anchor="end" class="small">F₂</text>
+
+  <!-- 近日 / 远日点标签 -->
+  <text x="650" y="295" text-anchor="end" class="small">近日点</text>
+  <text x="150" y="295" class="small">远日点</text>
+
+  <!-- 辅助圆上的 Q(rad = π/3) -->
+  <circle cx="525" cy="84" r="4" fill="#888" stroke="#444"/>
+  <text x="538" y="80" class="small" fill="#666">Q(辅助圆上)</text>
+
+  <!-- 椭圆上的 P (同 rad) -->
+  <circle cx="525" cy="127" r="6" fill="#5b8def" stroke="#2a4d8f"/>
+  <text x="540" y="123" class="label" fill="#2a4d8f">P(行星)</text>
+
+  <!-- Q → P 垂直投影线 -->
+  <line x1="525" y1="84" x2="525" y2="127" stroke="#888" stroke-dasharray="2 2"/>
+
+  <!-- C → Q -->
+  <line x1="400" y1="300" x2="525" y2="84" stroke="#888" stroke-width="1" stroke-dasharray="2 2"/>
+
+  <!-- 在 C 处标角度 rad -->
+  <path d="M 430 300 A 30 30 0 0 0 415 274" fill="none" stroke="#666" stroke-width="1.5"/>
+  <text x="438" y="287" class="small" fill="#444" font-weight="bold">rad</text>
+
+  <!-- F1 → P 焦半径 -->
+  <line x1="550" y1="300" x2="525" y2="127" stroke="#c44" stroke-width="2"/>
+
+  <!-- 底部公式条 -->
+  <g transform="translate(400, 540)">
+    <rect x="-360" y="-22" width="720" height="40" rx="6" fill="#fff8dc" stroke="#daa520"/>
+    <text x="0" y="6" text-anchor="middle" class="formula">
+      P 相对 F₁ 的坐标 = ( a·(cos rad − e),  b·sin rad ),   b = a·√(1−e²),   c = a·e
+    </text>
+  </g>
+</svg>

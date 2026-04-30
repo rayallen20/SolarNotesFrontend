@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="-apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif">
+  <style>
+    .label { font-size: 12px; fill: #1f2937; }
+    .sub-label { font-size: 11px; fill: #6b7280; }
+    .world-axis { stroke: #9ca3af; stroke-width: 1.5; }
+    .world-label { font-size: 11px; fill: #6b7280; }
+    .parent-axis { stroke: #2563eb; stroke-width: 1.8; }
+    .parent-label { font-size: 11px; fill: #1d4ed8; font-weight: 600; }
+    .compose-arrow { stroke: #f59e0b; stroke-width: 1.5; stroke-dasharray: 5 3; fill: none; }
+    .child { fill: #fbbf24; stroke: #d97706; stroke-width: 1.5; }
+    .origin-world { fill: #16a34a; }
+    .origin-parent { fill: #2563eb; }
+    .annot-bg { fill: #fffbeb; stroke: #fbbf24; stroke-width: 1; }
+    .grid { stroke: #f3f4f6; stroke-width: 0.5; }
+  </style>
+  <defs>
+    <marker id="ax-end" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <polygon points="0 0, 8 4, 0 8" fill="#9ca3af"/>
+    </marker>
+    <marker id="ax-end-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <polygon points="0 0, 8 4, 0 8" fill="#2563eb"/>
+    </marker>
+    <marker id="compose-end" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <polygon points="0 0, 9 4.5, 0 9" fill="#f59e0b"/>
+    </marker>
+  </defs>
+
+  <text x="480" y="32" text-anchor="middle" font-size="20" font-weight="700" fill="#111">
+    本地坐标 vs 世界坐标(同一个 child mesh,两个尺子量出两套数)
+  </text>
+
+  <!-- Subtle grid -->
+  <g class="grid">
+    <line x1="80" y1="350" x2="900" y2="350"/>
+    <line x1="80" y1="270" x2="900" y2="270"/>
+    <line x1="80" y1="190" x2="900" y2="190"/>
+    <line x1="80" y1="110" x2="900" y2="110"/>
+    <line x1="160" y1="60" x2="160" y2="430"/>
+    <line x1="240" y1="60" x2="240" y2="430"/>
+    <line x1="320" y1="60" x2="320" y2="430"/>
+    <line x1="400" y1="60" x2="400" y2="430"/>
+    <line x1="480" y1="60" x2="480" y2="430"/>
+    <line x1="560" y1="60" x2="560" y2="430"/>
+    <line x1="640" y1="60" x2="640" y2="430"/>
+    <line x1="720" y1="60" x2="720" y2="430"/>
+    <line x1="800" y1="60" x2="800" y2="430"/>
+  </g>
+
+  <!-- World axes -->
+  <line x1="80" y1="430" x2="900" y2="430" class="world-axis" marker-end="url(#ax-end)"/>
+  <line x1="80" y1="430" x2="80" y2="60" class="world-axis" marker-end="url(#ax-end)"/>
+  <text x="905" y="434" class="world-label">World X</text>
+  <text x="50" y="55" class="world-label">World Y</text>
+  <circle cx="80" cy="430" r="6" class="origin-world"/>
+  <text x="50" y="455" class="world-label">World 原点 (0, 0)</text>
+
+  <!-- Parent group at math world (300, 280) → SVG (380, 150), rotated 30° CCW (math) = -30° (SVG) -->
+  <g transform="translate(380, 150) rotate(-30)">
+    <circle cx="0" cy="0" r="5" class="origin-parent"/>
+    <line x1="0" y1="0" x2="80" y2="0" class="parent-axis" marker-end="url(#ax-end-blue)"/>
+    <line x1="0" y1="0" x2="0" y2="-60" class="parent-axis" marker-end="url(#ax-end-blue)"/>
+    <text x="86" y="4" class="parent-label">Parent X</text>
+    <text x="6" y="-62" class="parent-label">Parent Y</text>
+  </g>
+  <text x="395" y="143" class="parent-label">Parent 原点</text>
+  <text x="395" y="158" class="sub-label">parent 在世界中的位置 = (300, 280),旋转 30°</text>
+
+  <!-- Compose arrow: world origin → parent origin -->
+  <path d="M 95 425 Q 220 350 372 156" class="compose-arrow" marker-end="url(#compose-end)"/>
+  <text x="180" y="320" class="parent-label" fill="#92400e" font-size="12">① parent.matrixWorld</text>
+  <text x="180" y="336" class="sub-label" fill="#92400e">把(自己的)局部原点搬到 (300, 280) 并旋转 30°</text>
+
+  <!-- Child at parent-local (140, 0). Math world (421.2, 350) → SVG (501, 80) -->
+  <circle cx="501" cy="80" r="14" class="child"/>
+
+  <!-- Compose arrow: parent origin → child -->
+  <line x1="385" y1="148" x2="492" y2="84" class="compose-arrow" marker-end="url(#compose-end)"/>
+  <text x="385" y="118" class="parent-label" fill="#92400e" font-size="12">② 在 parent 的尺子里再走 (140, 0)</text>
+
+  <!-- Annotation box for child (moved down from top-right to mid-right empty area) -->
+  <rect x="540" y="240" width="370" height="92" class="annot-bg" rx="6"/>
+  <text x="555" y="264" class="label" font-weight="700">Child mesh(同一个物体)</text>
+  <text x="555" y="286" class="sub-label">
+    <tspan font-family="ui-monospace, monospace" fill="#1d4ed8" font-weight="600">child.position</tspan> = (140, 0)
+    <tspan fill="#6b7280">  ← 你代码里写的这行</tspan>
+  </text>
+  <text x="555" y="303" class="sub-label">
+    <tspan fill="#6b7280">含义:</tspan>「在父亲(Parent)的尺子下,我在 (140, 0)」
+  </text>
+  <text x="555" y="324" class="sub-label">
+    <tspan font-family="ui-monospace, monospace" fill="#dc2626" font-weight="600">getWorldPosition()</tspan>
+    ≈ (421, 350) <tspan fill="#6b7280"> ← scene 的尺子下</tspan>
+  </text>
+
+  <!-- Leader line from child mesh down to annotation box -->
+  <line x1="510" y1="92" x2="618" y2="240" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"/>
+
+  <!-- Compute panel -->
+  <g transform="translate(60, 460)">
+    <rect x="0" y="0" width="840" height="80" fill="#f9fafb" stroke="#e5e7eb" rx="6"/>
+    <text x="20" y="22" font-size="13" font-weight="700" fill="#111">这两个数怎么对上?</text>
+    <text x="20" y="42" font-size="12" fill="#1f2937">
+      child 在 parent 局部:(140, 0)。Parent 的旋转把这个向量旋转 30°,得到世界偏移
+      <tspan font-family="ui-monospace, monospace">(140·cos30°, 140·sin30°) ≈ (121, 70)</tspan>
+    </text>
+    <text x="20" y="60" font-size="12" fill="#1f2937">
+      再加上 parent 自己的世界位置 <tspan font-family="ui-monospace, monospace">(300, 280)</tspan> →
+      child 的世界位置 = <tspan font-family="ui-monospace, monospace" fill="#dc2626" font-weight="600">(421, 350)</tspan>
+    </text>
+    <text x="20" y="76" font-size="11" fill="#6b7280">
+      多层嵌套时,这个累乘从最深的子节点一路向上到 scene。Three.js 里这个累乘结果就是 <tspan font-family="ui-monospace, monospace">matrixWorld</tspan>。
+    </text>
+  </g>
+</svg>
