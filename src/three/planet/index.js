@@ -1,5 +1,7 @@
 import {config as planetConfigs} from "@/three/planet/config.js";
 import {createPlanet, getPlanetPickableMeshes, initPlanet, updatePlanet} from "@/three/planet/planet.js";
+import {planetZone} from "@/three/enum.js";
+import {layers} from "@/three/base/layers.js";
 
 /**
  * @type {Array<import('@/three/planet/planet.js').Planet>} 行星运行时实例列表
@@ -12,6 +14,19 @@ const planets = planetConfigs.map(createPlanet)
  * */
 async function initPlanets() {
     await Promise.all(planets.map(initPlanet))
+}
+
+/**
+ * 本函数用于为外行星设置补光图层
+ * */
+function markOuterPlanetsLayer() {
+    for (const planet of planets) {
+        if (planet.config.planetZone === planetZone.outer) {
+            planet.axis.traverse(obj => {
+                obj.layers.enable(layers.outerPlanets)
+            })
+        }
+    }
 }
 
 /**
@@ -35,6 +50,7 @@ function updatePlanets(needRevolution) {
 export {
     planets,
     initPlanets,
+    markOuterPlanetsLayer,
     getAllPickableMeshes,
     updatePlanets,
 }

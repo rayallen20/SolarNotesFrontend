@@ -73,7 +73,7 @@ function createPlanet(config) {
  *      Tips: 最终和外部交互的"接驳点"是axis层
  * 5. 设置轨道倾角
  * 6. 初始化行星在轨道上的位置
- * 7. 创建并添加轨道辅助线
+ * 7. 创建并添加轨道对象
  * @param {Planet} planet 给定的行星运行时对象
  * */
 async function initPlanet(planet) {

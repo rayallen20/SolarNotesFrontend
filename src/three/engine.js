@@ -5,7 +5,7 @@ import {createOrbitControls} from "@/three/base/controls.js";
 import {camera, resizeCamera} from "@/three/base/camera.js";
 import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from "@/three/sun.js";
 import {disposeBloom, initComposers, markAsBloomObject, renderBloomFrame, resizeBloom} from "@/three/postProcess.js";
-import {initPlanets, planets, updatePlanets} from "@/three/planet/index.js";
+import {initPlanets, markOuterPlanetsLayer, planets, updatePlanets} from "@/three/planet/index.js";
 
 /**
  * @type {Number|null} 当前动画循环的requestAnimationFrame句柄
@@ -30,9 +30,10 @@ let controls = null
  * 5. 加载后期管线相关功能:
  *      5.1 初始化后期处理管线
  *      5.2 为太阳设置辉光图层
+ *      5.3 为外行星设置补光图层
  * 6. 监听视口大小变化
  * 7. 启动动画循环
- * @param container {HTMLDivElement} 要挂载canvas的容器DOM
+ * @param {HTMLDivElement} container 要挂载canvas的容器DOM
  * @return {Function} 销毁函数
  * */
 export async function initEngine (container) {
@@ -69,6 +70,8 @@ export async function initEngine (container) {
         initComposers()
         // 5.2 为太阳设置辉光图层
         markAsBloomObject(sunAxis)
+        // 5.3 为外行星设置补光图层
+        markOuterPlanetsLayer()
 
         // 6. 监听视口大小变化
         window.addEventListener('resize', onWindowResize)

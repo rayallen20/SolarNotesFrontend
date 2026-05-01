@@ -374,7 +374,7 @@ export function createOrbitPath(planet) {
 
 - 内行星(水/金/地/火):能看到清晰的轨道线和公转运动
 - 金星:观察自转方向应与其他内行星相反(逆向)
-- 外行星(木/土/天/海):因尚未补光会偏暗,**这是预期的,等下一阶段补光**
+- 外行星(木/土/天/海):应能正常显示——补光接收端 `markOuterPlanetsLayer()` 已在 `engine.js` 初始化末尾接通(发送端 3 盏补光在 `sun.js`)
 - 海王星:用 `scene.getObjectByName('neptuneRoot')` 应能找到(验证 ④ 已修)
 - DevTools 控制台无 Three.js 警告或报错
 
