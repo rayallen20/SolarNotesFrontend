@@ -4,6 +4,18 @@
     box-sizing: border-box;
 }
 
+:root {
+    /* 本变量用于定义label和panel的边框颜色 */
+    --border: #20C6D8;
+}
+
+body {
+    /* 默认字体 */
+    font-family: "Source Han Serif CN", serif;
+    /* 默认字重 */
+    font-weight: 400;
+}
+
 canvas {
     display: block;
     position: fixed;
