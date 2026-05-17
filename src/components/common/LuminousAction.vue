@@ -2,26 +2,28 @@
     <!-- 容器层: 负责hover时的发光效果 -->
     <div class="wrap">
         <!-- 内容层: 负责渲染按钮或链接 -->
-        <button v-if="usage === 'button'" class="luminous-button">See More</button>
-        <RouterLink v-if="usage === 'link'" :to="{name: 'index'}" class="luminous-link">See More</RouterLink>
+        <button v-if="type === ActionType.button" class="luminous-button">See More</button>
+        <RouterLink v-if="type === ActionType.link" :to="{name: 'index'}" class="luminous-link">See More</RouterLink>
     </div>
 </template>
 
 <script setup>
+import {ActionType} from "@/lib/enum.js";
+
 defineOptions({
-    name: 'LuminousButton',
+    name: 'LuminousAction',
 })
 
 defineProps({
-    usage: {
+    type: {
         type: String,
         required: true,
         validator(value) {
-            if (value === 'button') {
+            if (value === ActionType.button) {
                 return true
             }
 
-            if (value === 'link') {
+            if (value === ActionType.link) {
                 return true
             }
 

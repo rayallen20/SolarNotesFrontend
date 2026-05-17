@@ -3,9 +3,17 @@ import {initSceneEnvironment, scene} from "@/three/base/scene.js";
 import {initSkySphereTexture, setAutoRotation as setSkySphereAutoRotation, skySphere} from "@/three/skySphere.js";
 import {createOrbitControls} from "@/three/base/controls.js";
 import {camera, resizeCamera} from "@/three/base/camera.js";
-import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from "@/three/sun.js";
+import {initSun, pickableMeshes as sunPickableMeshes, setAutoRotation as setSunAutoRotation, sunAxis} from "@/three/sun.js";
 import {disposeBloom, initComposers, markAsBloomObject, renderBloomFrame, resizeBloom} from "@/three/postProcess.js";
-import {initPlanets, markOuterPlanetsLayer, planets, updatePlanets} from "@/three/planet/index.js";
+import {
+    getAllPickableMeshes,
+    initPlanets,
+    markOuterPlanetsLayer,
+    planets,
+    updatePlanets
+} from "@/three/planet/index.js";
+import {setPickable} from "@/three/base/raycaster.js";
+import {tickHover} from "@/three/interaction/hover.js";
 
 /**
  * @type {Number|null} 当前动画循环的requestAnimationFrame句柄
@@ -18,6 +26,11 @@ let rafId = null
 let controls = null
 
 /**
+ * @type {import('@/stores/hover.js').HoverStore|null} 当前引擎实例持有的悬停状态机引用
+ * */
+let hoverStore = null
+
+/**
  * 本函数用于3D场景的初始化:
  * 1. 创建canvas对象并挂载到给定的容器DOM中
  * 2. 初始化
@@ -25,18 +38,22 @@ let controls = null
  *      2.2 天空球
  *      2.3 太阳
  *      2.4 行星
- * 3. 加载坐标辅助线(仅开发模式下)
- * 4. 创建轨道控制器
- * 5. 加载后期管线相关功能:
- *      5.1 初始化后期处理管线
- *      5.2 为太阳设置辉光图层
- *      5.3 为外行星设置补光图层
- * 6. 监听视口大小变化
- * 7. 启动动画循环
+ * 3. 注册可拾取对象列表
+ * 4. 加载坐标辅助线(仅开发模式下)
+ * 5. 创建轨道控制器
+ * 6. 加载后期管线相关功能:
+ *      6.1 初始化后期处理管线
+ *      6.2 为太阳设置辉光图层
+ *      6.3 为外行星设置补光图层
+ * 7. 监听视口大小变化
+ * 8. 启动动画循环
  * @param {HTMLDivElement} container 要挂载canvas的容器DOM
- * @return {Function} 销毁函数
+ * @param {import('@/stores/hover.js').HoverStore} store 定义状态机属性和行为的存储对象
+ * @return {{canvas: HTMLCanvasElement, dispose: Function}} 渲染器使用的canvas DOM元素和销毁函数
  * */
-export async function initEngine (container) {
+export async function initEngine(container, store) {
+    hoverStore = store
+
     try {
         // 1. 创建canvas对象并挂载到给定的容器DOM中
         container.appendChild(renderer.domElement)
@@ -56,27 +73,30 @@ export async function initEngine (container) {
             scene.add(planet.axis)
         }
 
-        // 3. 加载坐标辅助线(仅开发模式下)
+        // 3. 注册可拾取对象列表
+        setPickable([...sunPickableMeshes, ...getAllPickableMeshes()])
+
+        // 4. 加载坐标辅助线(仅开发模式下)
         if (import.meta.env.DEV) {
             const {axesHelper} = await import('@/three/base/axisHelper.js')
             scene.add(axesHelper)
         }
 
-        // 4. 创建轨道控制器
+        // 5. 创建轨道控制器
         controls = createOrbitControls(camera, renderer.domElement)
 
-        // 5. 加载后期管线相关功能
-        // 5.1 初始化后期处理管线
+        // 6. 加载后期管线相关功能
+        // 6.1 初始化后期处理管线
         initComposers()
-        // 5.2 为太阳设置辉光图层
+        // 6.2 为太阳设置辉光图层
         markAsBloomObject(sunAxis)
-        // 5.3 为外行星设置补光图层
+        // 6.3 为外行星设置补光图层
         markOuterPlanetsLayer()
 
-        // 6. 监听视口大小变化
+        // 7. 监听视口大小变化
         window.addEventListener('resize', onWindowResize)
 
-        // 7. 启动动画循环
+        // 8. 启动动画循环
         startAnimation()
     } catch (err) {
         // 清理资源
@@ -92,19 +112,28 @@ export async function initEngine (container) {
         throw err
     }
 
-    return dispose
+    return {
+        canvas: renderer.domElement,
+        dispose,
+    }
 }
 
 /**
  * 本函数用于逐帧更新场景并渲染:
  * 1. 更新天空球的自转
  * 2. 更新太阳的自转
- * 3. 更新行星的公转和自转
- * 4. 更新控制器
- * 5. 渲染辉光效果
+ * 3. 维护悬停状态机的状态变更
+ * 4. 更新行星的公转和自转
+ * 5. 更新控制器
+ * 6. 渲染辉光效果
+ * Tips: 由于本函数由requestAnimationFrame()调度,所以无法传参,这也是为什么把controls/hoverState等
+ * 变量设置为全局的原因:
+ *      1. 方便销毁
+ *      2. 不破坏函数签名(即不需要传参),使得函数更容易被requestAnimationFrame()调度
  * */
-function startAnimation () {
+function startAnimation() {
     rafId = requestAnimationFrame(startAnimation)
+    const now = performance.now()
 
     // 1. 更新天空球的自转
     setSkySphereAutoRotation()
@@ -112,13 +141,16 @@ function startAnimation () {
     // 2. 更新太阳的自转
     setSunAutoRotation()
 
-    // 3. 更新行星的公转和自转
-    updatePlanets(true)
+    // 3. 维护悬停状态机的状态变更
+    tickHover(now, hoverStore, camera, renderer.domElement)
 
-    // 4. 更新控制器
+    // 4. 更新行星的公转和自转
+    updatePlanets(!hoverStore.shouldFreezeRevolution)
+
+    // 5. 更新控制器
     controls.update()
 
-    // 5. 渲染辉光效果
+    // 6. 渲染辉光效果
     renderBloomFrame()
 }
 
@@ -129,6 +161,7 @@ function startAnimation () {
  * 3. 销毁轨道控制器
  * 4. 销毁后期处理管线
  * 5. 销毁渲染器
+ * 6. 复位悬停状态机的引用
  * */
 function dispose () {
     // 1. 取消对视口大小的监听
@@ -151,6 +184,9 @@ function dispose () {
 
     // 5. 销毁渲染器
     renderer.dispose()
+
+    // 6. 复位悬停状态机的引用
+    hoverStore = null
 }
 
 /**

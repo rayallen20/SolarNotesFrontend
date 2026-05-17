@@ -131,7 +131,7 @@ const config = {
     position: new THREE.Vector3(0, 0, 0),
     label: {
         bodyType: bodyType.sun,
-        name: '太阳',
+        title: '太阳',
         intro: '一段太阳的介绍文字'
     }
 }
@@ -142,7 +142,7 @@ const config = {
 export const sunAxis = new THREE.Group()
 sunAxis.name = config.axisName
 sunAxis.userData.bodyType = config.label.bodyType
-sunAxis.userData.label = config.label.name
+sunAxis.userData.title = config.label.title
 sunAxis.userData.intro = config.label.intro
 
 /**

@@ -11,8 +11,8 @@ import {bodyType, planetZone} from "@/three/enum.js";
 /**
  * @typedef {Object} LabelConfig 行星标签配置项
  * @property {bodyType} bodyType 天体类型
- * @property {String} name 天体名称(用于显示在标签上)
- * @property {String} intro 天体介绍文字
+ * @property {String} title 天体对应的label标题
+ * @property {String} intro 天体对应的label介绍
  * */
 
 /**
@@ -51,7 +51,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '水星',
+            title: '水星',
             intro: '一段水星的介绍文字',
         },
         planetZone: planetZone.inner,
@@ -73,7 +73,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '金星',
+            title: '金星',
             intro: '一段金星的介绍文字',
         },
         planetZone: planetZone.inner,
@@ -95,7 +95,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '地球',
+            title: '地球',
             intro: '一段地球的介绍文字',
         },
         planetZone: planetZone.inner,
@@ -117,7 +117,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '火星',
+            title: '火星',
             intro: '一段火星的介绍文字',
         },
         planetZone: planetZone.inner,
@@ -139,7 +139,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '木星',
+            title: '木星',
             intro: '一段木星的介绍文字',
         },
         planetZone: planetZone.outer,
@@ -161,7 +161,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '土星',
+            title: '土星',
             intro: '一段土星的介绍文字',
         },
         planetZone: planetZone.outer,
@@ -183,7 +183,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '天王星',
+            title: '天王星',
             intro: '一段天王星的介绍文字',
         },
         planetZone: planetZone.outer,
@@ -205,7 +205,7 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            name: '海王星',
+            title: '海王星',
             intro: '一段海王星的介绍文字',
         },
         planetZone: planetZone.outer,
