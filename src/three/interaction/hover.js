@@ -4,6 +4,21 @@ import {pickHoveredBody} from "@/three/base/raycaster.js";
 import {isFarRect, isNearRect} from "@/three/lib/rect.js";
 
 /**
+ * @typedef {(nowMs: Number, store: import('@/stores/hover.js').HoverStore,
+ * camera: import('three').PerspectiveCamera, domElement: HTMLCanvasElement) => void} PhaseHandler 状态机各阶段对应的处理函数
+ * */
+
+/**
+ * @type {Object<String, PhaseHandler>} 本对象用于将状态机的每个状态映射到对应的处理函数上
+ * */
+const phaseHandlers = {
+    [HoverPhase.idle]: handleIdle,
+    [HoverPhase.body]: handleBody,
+    [HoverPhase.sticky]: handleSticky,
+    [HoverPhase.label]: handleLabel,
+}
+
+/**
  * 本函数用于逐帧维护状态机
  * @param {Number} nowMs 当前时间戳(单位: 毫秒)
  * @param {import('@/stores/hover.js').HoverStore} store 定义状态机属性和行为的存储对象
@@ -75,13 +90,6 @@ function tickHover(nowMs, store, camera, domElement) {
     }
 
     // step4. 按当前状态调用对应处理函数
-    const phaseHandlers = {
-        [HoverPhase.idle]: handleIdle,
-        [HoverPhase.body]: handleBody,
-        [HoverPhase.sticky]: handleSticky,
-        [HoverPhase.label]: handleLabel,
-    }
-
     const handler = phaseHandlers[store.phase]
     // 防御性编程: 理论上handler是不可能为undefined的,这里做判断,是为了防止
     // 1. store.phase被不可预料的修改
@@ -122,15 +130,12 @@ function handleBody(nowMs, store, camera, domElement) {
         return
     }
 
-    // 优先级2. 命中天体 但命中的天体不是状态机当前记录的激活天体(或者可以说是: 鼠标这一帧命中的天体和上一帧命中的天体不同)
-    // 这就说明鼠标从一个天体移动到了另一个天体,需要将状态机记录的激活天体切换为鼠标当前命中的天体,并保持在body状态
+    // 优先级2. 仍然命中某个天体
+    // 此时让enterBody()内部判断命中的天体是否发生改变即可
     const pointer = store.pointer
     const hitObject = pickHoveredBody(pointer.ndcCoordinate, camera)
     if (hitObject !== null) {
-        if (hitObject !== store.activeEntity) {
-            store.enterBody(hitObject)
-        }
-
+        store.enterBody(hitObject)
         return
     }
 
@@ -185,7 +190,7 @@ function handleSticky(nowMs, store, camera, domElement) {
     // 又没有命中天体(逻辑判断能走到这里,就必然满足这2个条件了),此时应进入idle状态
     const stickyConfig = store.sticky
     const elapsed = nowMs - stickyConfig.startedAt
-    if (elapsed > stickyConfig.expireMs) {
+    if (elapsed >= stickyConfig.expireMs) {
         store.enterIdle()
         return
     }

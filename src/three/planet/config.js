@@ -16,6 +16,11 @@ import {bodyType, planetZone} from "@/three/enum.js";
  * */
 
 /**
+ * @typedef {Object} HoverConfig 行星hover区域配置项
+ * @property {Number} radius 世界坐标系下的hover区域半径(单位: 与场景的世界单位一致)
+ * */
+
+/**
  * @typedef {Object} PlanetConfig 行星配置项
  * @property {Number} id 行星id
  * @property {String} name 天体名称(用于程序内部标识)
@@ -27,6 +32,7 @@ import {bodyType, planetZone} from "@/three/enum.js";
  * @property {Number} rotationSpeed 行星自转速度 (单位: 弧度/帧) (负值表示逆向自转,如金星)
  * @property {OrbitConfig} orbit 轨道配置项
  * @property {LabelConfig} label 标签配置项
+ * @property {HoverConfig} hover hover区域配置项
  * @property {planetZone} planetZone 行星运行区域(小行星带内/外)
  * */
 
@@ -54,6 +60,9 @@ export const config = [
             title: '水星',
             intro: '一段水星的介绍文字',
         },
+        hover: {
+            radius: 0.5,
+        },
         planetZone: planetZone.inner,
     },
     {
@@ -75,6 +84,9 @@ export const config = [
             bodyType: bodyType.planet,
             title: '金星',
             intro: '一段金星的介绍文字',
+        },
+        hover: {
+            radius: 1.25,
         },
         planetZone: planetZone.inner,
     },
@@ -98,6 +110,9 @@ export const config = [
             title: '地球',
             intro: '一段地球的介绍文字',
         },
+        hover: {
+            radius: 1.3,
+        },
         planetZone: planetZone.inner,
     },
     {
@@ -119,6 +134,9 @@ export const config = [
             bodyType: bodyType.planet,
             title: '火星',
             intro: '一段火星的介绍文字',
+        },
+        hover: {
+            radius: 0.7,
         },
         planetZone: planetZone.inner,
     },
@@ -142,6 +160,10 @@ export const config = [
             title: '木星',
             intro: '一段木星的介绍文字',
         },
+        hover: {
+            // Tips: 含行星带则radius应为14.65
+            radius: 8.14,
+        },
         planetZone: planetZone.outer,
     },
     {
@@ -163,6 +185,9 @@ export const config = [
             bodyType: bodyType.planet,
             title: '土星',
             intro: '一段土星的介绍文字',
+        },
+        hover: {
+            radius: 12.35,
         },
         planetZone: planetZone.outer,
     },
@@ -186,6 +211,9 @@ export const config = [
             title: '天王星',
             intro: '一段天王星的介绍文字',
         },
+        hover: {
+            radius: 5.25,
+        },
         planetZone: planetZone.outer,
     },
     {
@@ -207,6 +235,9 @@ export const config = [
             bodyType: bodyType.planet,
             title: '海王星',
             intro: '一段海王星的介绍文字',
+        },
+        hover: {
+            radius: 5.1,
         },
         planetZone: planetZone.outer,
     },

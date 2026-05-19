@@ -2,12 +2,10 @@
     <div class="content-layer">
         <!-- 内容区域开始 -->
         <div class="content">
-            <h2>网络安全管理</h2>
+            <h2>{{labelTextSnapshot !== null ? labelTextSnapshot.title : ''}}</h2>
             <div class="cut-off-line"></div>
             <p>
-                150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.
-                150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.
-                150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内
+                {{labelTextSnapshot !== null ? labelTextSnapshot.intro : ''}}
             </p>
         </div>
         <!-- 内容区域结束 -->
@@ -21,10 +19,41 @@
 <script setup>
 import LuminousAction from "@/components/common/LuminousAction.vue";
 import {ActionType} from "@/lib/enum.js";
+import {useHoverStore} from "@/stores/hover.js";
+import {ref, watch} from "vue";
 
 defineOptions({
     name: 'ContentLayer',
 })
+
+/**
+ * @type {import('@/stores/hover.js').HoverStore} 悬停状态机的store实例
+ * */
+const hoverStore = useHoverStore()
+
+/**
+ * @type {import('vue').Ref<import('@/stores/hover.js').LabelText|null>} label文本的本地快照
+ * 目的: 让label淡出动画期间(即opacity从1变为0的0.5s)文字保持不变,而不是随activeEntity变为null而立即清空,
+ *      否则会出现"文字先消失,容器再淡掉"的视觉效果,这种体验非常差
+ *
+ * 更新规则:
+ *      - hoverStore.labelText变为非null(状态机变更状态为body/sticky/label时): 同步到本变量
+ *      - hoverStore.labelText变为null(状态机变更状态为idle时): 不更新本变量,继续持有上一个天体的内容,
+ *                                                          直到下一次有非null值到来
+ * */
+const labelTextSnapshot = ref(null)
+
+watch(
+    () => hoverStore.labelText,
+    (newVal) => {
+        if (newVal !== null) {
+            labelTextSnapshot.value = newVal
+        }
+    },
+    {
+        immediate: true
+    },
+)
 </script>
 
 <style scoped>

@@ -2,6 +2,7 @@ import {defineStore} from "pinia";
 import {computed, ref, shallowRef} from "vue";
 import * as THREE from 'three'
 import {HoverPhase} from "@/lib/enum.js";
+import {findAncestorByName} from "@/three/lib/findAncestorByName.js";
 
 /**
  * @typedef {Object} Pointer 鼠标位置快照信息,由SolarCanvas组件的DOM事件每帧更新
@@ -50,7 +51,7 @@ export const useHoverStore = defineStore('hover', () => {
     /**
      * @type {import('vue').ShallowRef<import('three').Object3D|null>} 当前激活的天体3D对象
      *      - idle状态: null
-     *      - body状态: 投射检测命中的天体
+     *      - body状态: 投射检测命中的叶子节点Mesh的祖先锚点Mesh
      *      - sticky状态: 从body状态转换到sticky状态时,body状态投射检测命中的天体
      *      - label状态: 从body/sticky状态转换到label状态时,本字段值不改变,但会锁定天体.锁定操作是为了防止鼠标在label内移动时,
      *                  同时命中其他天体,造成状态机在label状态和body/sticky状态之间来回切换
@@ -161,12 +162,9 @@ export const useHoverStore = defineStore('hover', () => {
             return null
         }
 
-        const title = entity.userData.title
-        const intro = entity.userData.intro
-
         return {
-            title,
-            intro,
+            title: entity.userData.title,
+            intro: entity.userData.intro,
         }
     })
 
@@ -188,8 +186,8 @@ export const useHoverStore = defineStore('hover', () => {
     }
 
     /**
-     * 本函数用于将状态机切换到body状态,并记录投射检测命中的天体
-     * @param {import('three').Object3D} hitObject 投射检测命中的3D物体(一般是行星的root层(公转层)或太阳的root层(自转层))
+     * 本函数用于将状态机切换到body状态,并记录投射检测命中天体的锚点天体
+     * @param {import('three').Object3D} hitObject 投射检测命中的叶子节点Mesh
      * */
     function enterBody(hitObject) {
         // 防御性编程: 若状态机正常的状态流转,isActiveLocked为true意味着当前状态机应该是label状态,
@@ -200,8 +198,20 @@ export const useHoverStore = defineStore('hover', () => {
             return
         }
 
+        // 查找祖先锚点Mesh
+        const anchorName = hitObject.userData.anchorPointName
+        if (typeof anchorName !== 'string' || anchorName === '') {
+            return
+        }
+
+        const anchor = findAncestorByName(hitObject, anchorName)
+        if (anchor === null) {
+            return
+        }
+
         phase.value = HoverPhase.body
-        activeEntity.value = hitObject
+        // Tips: 若此处是同引用赋值,则不会触发watch/computed/模板重渲染的
+        activeEntity.value = anchor
     }
 
     /**

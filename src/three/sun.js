@@ -17,6 +17,8 @@ import {bodyType} from "@/three/enum.js";
  * @property {Number} emissive.intensity 自发光强度
  * @property {Object} scale 太阳模型缩放相关配置
  * @property {Number} scale.size 太阳模型缩放比例
+ * @property {Object} hover 太阳hover区域配置项
+ * @property {Object} hover.radius 世界坐标系下hover区域的半径
  * @property {Object} autoRotation 太阳自转相关配置
  * @property {Number} autoRotation.speed 太阳自转速度
  * @property {Number} autoRotation.dipAngle 太阳自转轴倾斜角度 单位: 角度
@@ -82,6 +84,9 @@ const config = {
     scale: {
         size: 4,
     },
+    hover: {
+        radius: 2.0,
+    },
     autoRotation: {
         speed: 0.01,
         dipAngle: 7.25,
@@ -144,6 +149,7 @@ sunAxis.name = config.axisName
 sunAxis.userData.bodyType = config.label.bodyType
 sunAxis.userData.title = config.label.title
 sunAxis.userData.intro = config.label.intro
+sunAxis.userData.hoverRadius = config.hover.radius
 
 /**
  * @type {import('three').Group} 太阳组.用于包含太阳模型和相关光源

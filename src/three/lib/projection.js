@@ -14,17 +14,6 @@ import * as THREE from 'three'
  */
 
 /**
- * @type {import('three').Box3} 本常量用于表示一个给定3D对象的包围盒
- * Tips: 由于需要缓存(不触发GC),所以将用到的对象定义在了函数外部,本文件中后续的常量均因为此原因故定义在函数外部
- * */
-const box = new THREE.Box3()
-
-/**
- * @type {import('three').Sphere} 本常量用于表示一个给定3D对象的包围球
- * */
-const sphere = new THREE.Sphere()
-
-/**
  * @type {import('three').Vector3} 本常量用于表示包围球的中心点世界坐标
  * */
 const centerWorld = new THREE.Vector3()
@@ -34,11 +23,6 @@ const centerWorld = new THREE.Vector3()
  * Tips: 这里的NDC坐标有3个分量,是因为需要使用z轴坐标判定包围球在相机前方(z < 0)还是在相机后方(z > 0)
  * */
 const centerNDC = new THREE.Vector3()
-
-/**
- * @type {import('three').Matrix4} 本常量用于表示一个给定3D对象的世界变换矩阵的逆矩阵
- * */
-const inverseMatrixWorld = new THREE.Matrix4()
 
 /**
  * @type {import('three').Vector3} 本变量用于表示在世界坐标系下,从包围球的球心出发,
@@ -63,7 +47,7 @@ const cameraRightWorld = new THREE.Vector3()
 const worldScale = new THREE.Vector3()
 
 /**
- * 本函数用于计算给定的3D物体在屏幕上的投影信息
+ * 本函数用于获取给定3D物体在其本地坐标系下的包围球球心和半径
  * @param {import('three').Object3D} object 需要计算投影信息的3D物体
  * @param {import('three').PerspectiveCamera} camera 用于渲染场景的相机
  * @param {HTMLCanvasElement} domElement 渲染场景的DOM元素 (通常是canvas)
@@ -119,8 +103,7 @@ function calcProjection(object, camera, domElement) {
     // 在屏幕坐标系中,右侧采样点与包围球中心点的距离,即为包围球在当前相机视角中,投影到屏幕中的半径
     const deltaX = edgeX - centerX
     const deltaY = edgeY - centerY
-    // TODO: 这里的/2操作是经验 而非原理 是个需要修正的bug
-    const radiusPx = Math.hypot(deltaX, deltaY) / 2
+    const radiusPx = Math.hypot(deltaX, deltaY)
 
     projection.centerPx.x = centerX
     projection.centerPx.y = centerY
@@ -132,7 +115,16 @@ function calcProjection(object, camera, domElement) {
 
 /**
  * 本函数用于获取给定3D物体在其本地坐标系下的包围球球心和半径
- * Tips: 返回值会被缓存到3D物体的userData中,后续调用会直接命中缓存,因此**调用方不应修改返回字段**
+ *
+ * 设计契约:
+ *      - 调用方传入的object必须是叶子节点Mesh(该Mesh为投射检测命中的Mesh)的祖先anchor Object3D,
+ *        实际上是Group,即sunAxis或planet.root
+ *      - anchor Object3D的userData中需配置hoverRadius,表示世界空间下的hover区域半径
+ *      以上2个条件中,任一条件不满足,则本函数返回的LocalBoundingSphere.radiusLocal字段值为0,
+ *      此时投影圆将缩成一个点,便于测试发现问题
+ *      - centerLocal始终为(0, 0, 0): 因为anchor Object3D自身的世界位置就是天体的几何中心
+ *
+ * Tips: 返回值会被缓存到anchor Object3D的userData中,后续调用会直接命中缓存,因此**调用方不应修改返回字段**
  * @param {import('three').Object3D} object 需要计算包围球的3D物体
  * @return {LocalBoundingSphere} 物体包围球在物体本地坐标系下的球心和半径
  * */
@@ -149,37 +141,14 @@ function getLocalBoundingSphere(object) {
         radiusLocal: 0,
     }
 
-    // 优先使用 geometry.boundingSphere 来获取包围球信息
-    if (object.isMesh && object.geometry !== undefined && object.geometry !== null) {
-        const geometry = object.geometry
-
-        if (geometry.boundingSphere === null) {
-            geometry.computeBoundingSphere()
-        }
-
-        localSphere.centerLocal.copy(geometry.boundingSphere.center)
-        localSphere.radiusLocal = geometry.boundingSphere.radius
-
-        object.userData[cacheKey] = localSphere
-        return localSphere
+    // Tips: 此处读取的是配置层的hover.radius,然后直接存入数学层的radiusLocal
+    // Tips: 因为anchor Object3D是没有经过scale的,所以可以直接使用这个数值
+    const configured = object.userData.hoverRadius
+    if (typeof configured === 'number' && configured > 0) {
+        localSphere.radiusLocal = configured
     }
 
-    // setFromObject在计算包围盒时会遍历物体的所有子对象 因此此处使用缓存策略
-    // 计算后将结果缓存在object.userData中 避免重复计算
-    box.setFromObject(object)
-    box.getBoundingSphere(sphere)
-
-    // 将世界坐标转换为物体本地坐标
-    inverseMatrixWorld.copy(object.matrixWorld).invert()
-    const centerLocal = sphere.center.clone().applyMatrix4(inverseMatrixWorld)
-
-    object.getWorldScale(worldScale)
-    // Tips: 这里的 `|| 1`操作是为了防止前面的`Math.max()`出现0/NaN这种假值
-    const maxScale = Math.max(worldScale.x, worldScale.y, worldScale.z) || 1
-    const radiusLocal = sphere.radius / maxScale
-
-    localSphere.centerLocal.copy(centerLocal)
-    localSphere.radiusLocal = radiusLocal
+    object.userData[cacheKey] = localSphere
 
     return localSphere
 }

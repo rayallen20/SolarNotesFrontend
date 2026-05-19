@@ -5,7 +5,7 @@
         :style="positionStyle"
         :class="{'is-visible': hoverStore.shouldShowLabel}"
         @pointerenter="onPointerEnter"
-        @pointerleave="onPointerLeave()"
+        @pointerleave="onPointerLeave"
     >
         <!-- 裁剪区域开始 -->
         <Shape></Shape>

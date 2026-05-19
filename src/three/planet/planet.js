@@ -48,6 +48,7 @@ function createPlanet(config) {
     root.userData.bodyType = config.label.bodyType
     root.userData.title = config.label.title
     root.userData.intro = config.label.intro
+    root.userData.hoverRadius = config.hover.radius
 
     return {
         config,
