@@ -222,7 +222,6 @@ watch(
 /* 标签容器开始 */
 .solar-label {
     position: fixed;
-    /* TODO: 此处是为了看到 最后要还原成0 */
     top: 0;
     left: 0;
     width: var(--width);

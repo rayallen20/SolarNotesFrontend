@@ -3,7 +3,7 @@
     <div class="wrap">
         <!-- 内容层: 负责渲染按钮或链接 -->
         <button v-if="type === ActionType.button" class="luminous-button">See More</button>
-        <RouterLink v-if="type === ActionType.link" :to="{name: 'index'}" class="luminous-link">See More</RouterLink>
+        <RouterLink v-if="type === ActionType.link" :to="{name: 'article'}" class="luminous-link">See More</RouterLink>
     </div>
 </template>
 

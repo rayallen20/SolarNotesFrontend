@@ -4,9 +4,20 @@ import App from "@/App.vue";
 const routes = [
     {
         path: '/',
-        component: App,
-        name: 'index',
+        redirect: {
+            name: 'solar',
+        }
     },
+    {
+        path: '/solar',
+        component: import('@/pages/SolarCanvas.vue'),
+        name: 'solar',
+    },
+    {
+        path: '/article',
+        component: () => import('@/pages/ArticleReader.vue'),
+        name: 'article',
+    }
 ]
 
 const router = createRouter({

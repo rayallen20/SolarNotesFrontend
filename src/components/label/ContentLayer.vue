@@ -3,7 +3,7 @@
         <!-- 内容区域开始 -->
         <div class="content">
             <h2>{{labelTextSnapshot !== null ? labelTextSnapshot.title : ''}}</h2>
-            <div class="cut-off-line"></div>
+            <CutOffLine class="divider"></CutOffLine>
             <p>
                 {{labelTextSnapshot !== null ? labelTextSnapshot.intro : ''}}
             </p>
@@ -21,6 +21,7 @@ import LuminousAction from "@/components/common/LuminousAction.vue";
 import {ActionType} from "@/lib/enum.js";
 import {useHoverStore} from "@/stores/hover.js";
 import {ref, watch} from "vue";
+import CutOffLine from "@/components/common/CutOffLine.vue";
 
 defineOptions({
     name: 'ContentLayer',
@@ -86,22 +87,8 @@ watch(
     letter-spacing: 1px;
 }
 
-.content-layer .content .cut-off-line {
+.content-layer .content .divider {
     margin-bottom: 10px;
-    width: 60px;
-    height: 3px;
-    /* 从左到右 由暗到亮 */
-    background: linear-gradient(
-        90deg,
-        rgba(32, 198, 216, 0.4) 0%,
-        rgba(32, 198, 216, 1) 100%
-    );
-    clip-path: polygon(
-        6px 0,
-        60px 0,
-        54px 3px,
-        0 3px
-    );
 }
 
 .content-layer .content p {

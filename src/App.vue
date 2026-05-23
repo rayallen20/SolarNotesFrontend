@@ -1,6 +1,6 @@
 <template>
     <div class="app">
-        <SolarCanvas></SolarCanvas>
+        <RouterView></RouterView>
     </div>
 </template>
 
@@ -8,7 +8,6 @@
 import '@/assets/reset.css'
 import '@/assets/font.css'
 import '@/assets/index.css'
-import SolarCanvas from "@/pages/SolarCanvas.vue";
 
 defineOptions({
     name: 'App',

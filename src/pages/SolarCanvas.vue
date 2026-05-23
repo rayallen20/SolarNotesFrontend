@@ -1,6 +1,8 @@
 <template>
-    <div ref="container" class="solar-canvas"></div>
-    <SolarLabel></SolarLabel>
+    <div class="solar-canvas">
+        <div ref="container" class="canvas-container"></div>
+        <SolarLabel></SolarLabel>
+    </div>
 </template>
 
 <script setup>
@@ -127,7 +129,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.solar-canvas {
+.canvas-container {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
