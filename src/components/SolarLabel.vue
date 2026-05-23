@@ -27,10 +27,40 @@ import Shape from "@/components/label/Shape.vue";
 import OuterDecorLayer from "@/components/label/OuterDecorLayer.vue";
 import ContentLayer from "@/components/label/ContentLayer.vue";
 import {useHoverStore} from "@/stores/hover.js";
-import {computed, nextTick, useTemplateRef, watch} from "vue";
+import {computed, nextTick, onMounted, ref, useTemplateRef, watch} from "vue";
 
 defineOptions({
     name: 'SolarLabel',
+})
+
+/**
+ * @type {Number} 视口安全边距阈值:
+ * - label与视口下边缘的距离需大于该值,label才能出现在投影圆的正下方
+ * - 否则label需要翻转到投影圆的正上方
+ * */
+const VIEWPORT_SAFE_MARGIN_THRESHOLD_PX = 8
+
+/**
+ * @type {import('vue').Ref<Number>} label的宽度
+ * */
+const labelWidth = ref(0)
+
+/**
+ * @type {import('vue').Ref<Number>} label的高度
+ * */
+const labelHeight = ref(0)
+
+/**
+ * @type {import('vue').Ref<Number>} 折线凹口深度
+ * */
+const notchDepth = ref(0)
+
+onMounted(() => {
+    const style = getComputedStyle(containerRef.value)
+
+    labelWidth.value = parseFloat(style.getPropertyValue('--width'))
+    labelHeight.value = parseFloat(style.getPropertyValue('--height'))
+    notchDepth.value = parseFloat(style.getPropertyValue('--notch-depth'))
 })
 
 /**
@@ -45,13 +75,38 @@ const hoverStore = useHoverStore()
 
 /**
  * @type {import('vue').ComputedRef<{left: String, top: String}>} 用于为label做绝对定位的CSS样式
- * TODO:本阶段中暂时使用activeProjection的中心点作为占位实现,下一阶段中接入calcOffset()后修改此处
+ * - 视口内可放置时: label的顶部凹口中点位于投影圆圆心正下方,即: 顶部凹口中点与投影圆相切
+ * - 视口内不可放置时: label翻转到投影圆圆心的正上方,此时label底部凹口中点位于投影圆圆心正上方,即: 底部凹口中点与投影圆相切
  * */
 const positionStyle = computed(() => {
-    const center = hoverStore.activeProjection.centerPx
+    const projection = hoverStore.activeProjection
+    const centerX = projection.centerPx.x
+    const centerY = projection.centerPx.y
+    const radius = projection.radiusPx
+
+    const width = labelWidth.value
+    const height = labelHeight.value
+    const depth = notchDepth.value
+
+    // 水平位置: 凹口中点在投影圆圆心的正下方
+    const left = centerX - width / 2
+
+    // 垂直位置: 顶部凹口中点位于投影圆底部,即: 顶部凹口中点与投影圆相切
+    const downTop = centerY + radius - depth
+    const downBottom = downTop + height
+
+    // 翻转判定: 若label下底边超过视口安全边距阈值,则需要翻转到投影圆正上方
+    const shouldFlipUp = downBottom > window.innerHeight - VIEWPORT_SAFE_MARGIN_THRESHOLD_PX
+
+    // 计算垂直位置
+    let top = downTop
+    if (shouldFlipUp) {
+        top = centerY - radius - (height - depth)
+    }
+
     return {
-        left: `${center.x}px`,
-        top: `${center.y}px`,
+        left: `${left}px`,
+        top: `${top}px`,
     }
 })
 
