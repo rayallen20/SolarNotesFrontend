@@ -96,6 +96,13 @@ export const useFocusStore = defineStore('focus', () => {
             return
         }
 
+        // 若当前已在聚焦流程(状态机状态为focusing/focused/clearing)中,则不做任何操作
+        // - focusing/focused: 避免重算位置导致的镜头抖动
+        // - clearing: 让退出动画执行完,不取消退出动画
+        if (phase.value !== FocusPhase.idle && focusedEntity.value === anchor) {
+            return
+        }
+
         // 仅当状态从idle转换为focusing时,才需要记录shouldCaptureHome为true,以便tickFocus()在动画开始时记录退出聚焦时要回到的位置
         animation.shouldCaptureHome = (phase.value === FocusPhase.idle)
         phase.value = FocusPhase.focusing
