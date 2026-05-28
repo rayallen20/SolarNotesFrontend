@@ -26,6 +26,7 @@ defineOptions({
     position: absolute;
     inset: 0;
     background-image: linear-gradient(90deg, rgba(5, 9, 18, 0.90) 0%, rgba(5, 9, 18, 0.40) 49.98%, rgba(5, 9, 18, 0.90) 99.97%);
+    pointer-events: auto;
 
     /* 裁剪开始 */
     clip-path: polygon(

@@ -4,11 +4,12 @@
         ref="container"
         :style="positionStyle"
         :class="{'is-visible': hoverStore.shouldShowLabel}"
-        @pointerenter="onPointerEnter"
-        @pointerleave="onPointerLeave"
     >
         <!-- 裁剪区域开始 -->
-        <Shape></Shape>
+        <Shape
+            @pointerenter="onPointerEnter"
+            @pointerleave="onPointerLeave"
+        ></Shape>
         <!-- 裁剪区域结束 -->
 
         <!-- 外部装饰件层开始 -->
@@ -268,7 +269,6 @@ watch(
 .solar-label.is-visible {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto;
     /* 显示时立刻可见,再淡入 */
     transition:
         opacity 0.5s linear,
