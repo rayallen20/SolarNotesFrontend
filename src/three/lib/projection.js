@@ -71,7 +71,7 @@ function calcProjection(object, camera, domElement) {
     object.updateWorldMatrix(true, false)
     camera.updateWorldMatrix(true, false)
 
-    const {centerLocal, radiusLocal} = getLocalBoundingSphere(object)
+    const {centerLocal} = getLocalBoundingSphere(object)
 
     // 计算包围球中心点的世界坐标
     centerWorld.copy(centerLocal).applyMatrix4(object.matrixWorld)
@@ -84,9 +84,10 @@ function calcProjection(object, camera, domElement) {
     const centerY = (-centerNDC.y * 0.5 + 0.5) * rect.height + rect.top
 
     // 计算包围球在世界坐标系下的半径
-    object.getWorldScale(worldScale)
-    const maxScale = Math.max(worldScale.x, worldScale.y, worldScale.z) || 1
-    const radiusWorld = radiusLocal * maxScale
+    // Tips: 这里虽然getWorldRadius()内又调用了一次getLocalBoundingSphere(),
+    // Tips: 看起来像是在本函数内调用了2次getLocalBoundingSphere(),但实际上getLocalBoundingSphere()
+    // Tips: 内部是有缓存的,所以第2次调用几乎没有成本
+    const radiusWorld = getWorldRadius(object)
 
     // 计算相机右方向的单位向量
     cameraRightWorld.setFromMatrixColumn(camera.matrixWorld, 0).normalize()
@@ -111,6 +112,18 @@ function calcProjection(object, camera, domElement) {
     projection.ndcZ = centerNDC.z
 
     return projection
+}
+
+/**
+ * 本函数用于计算物体包围球在世界坐标系下的半径(本地半径 * 世界缩放的最大分量)
+ * @param {import('three').Object3D} object 需要计算包围球半径的3D物体
+ * @return {number} 返回物体包围球在世界坐标系下的半径(未配置hoverRadius时为0)
+ * */
+function getWorldRadius(object) {
+    const {radiusLocal} = getLocalBoundingSphere(object)
+    object.getWorldScale(worldScale)
+    const maxScale = Math.max(worldScale.x, worldScale.y, worldScale.z) || 1
+    return radiusLocal * maxScale
 }
 
 /**
@@ -180,4 +193,5 @@ function distanceToProjectionEdgePx(pointerPx, centerPx, radiusPx) {
 export {
     calcProjection,
     distanceToProjectionEdgePx,
+    getWorldRadius,
 }

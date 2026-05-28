@@ -11,7 +11,11 @@
         <!-- 内容区域结束 -->
 
         <!-- 底部按钮区域开始 -->
-        <LuminousAction :type="ActionType.button" class="bottom-button"></LuminousAction>
+        <LuminousAction
+            :type="ActionType.button"
+            class="bottom-button"
+            @click="onFocusClick"
+        ></LuminousAction>
         <!-- 底部按钮区域结束 -->
     </div>
 </template>
@@ -22,6 +26,7 @@ import {ActionType} from "@/lib/enum.js";
 import {useHoverStore} from "@/stores/hover.js";
 import {ref, watch} from "vue";
 import CutOffLine from "@/components/common/CutOffLine.vue";
+import {useFocusStore} from "@/stores/focus.js";
 
 defineOptions({
     name: 'ContentLayer',
@@ -31,6 +36,11 @@ defineOptions({
  * @type {import('@/stores/hover.js').HoverStore} 悬停状态机的store实例
  * */
 const hoverStore = useHoverStore()
+
+/**
+ * @type {import('@/stores/focus.js').FocusStore} 聚焦状态机的store实例
+ * */
+const focusStore = useFocusStore()
 
 /**
  * @type {import('vue').Ref<import('@/stores/hover.js').LabelText|null>} label文本的本地快照
@@ -55,6 +65,23 @@ watch(
         immediate: true
     },
 )
+
+/**
+ * 本函数用于处理按钮的点击回调
+ * @param {PointerEvent} event click事件对象
+ * 函数内的操作:
+ *      1. 聚焦到当前锚点对象
+ *      2. 立即隐藏label
+ * */
+function onFocusClick(event) {
+    const anchor = hoverStore.activeEntity
+    if (anchor === null) {
+        return
+    }
+
+    focusStore.requestFocus(anchor)
+    hoverStore.enterIdle()
+}
 </script>
 
 <style scoped>

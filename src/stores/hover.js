@@ -318,5 +318,5 @@ export const useHoverStore = defineStore('hover', () => {
 })
 
 /**
- * @typedef {ReturnType<typeof useHoverStore>} HoverStore 状态机的store实例
+ * @typedef {ReturnType<typeof useHoverStore>} HoverStore 悬停状态机的store实例
  * */

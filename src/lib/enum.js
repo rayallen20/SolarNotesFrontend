@@ -22,7 +22,25 @@ const HoverPhase = Object.freeze({
     label: 'label',
 })
 
+/**
+ * @typedef {Object} FocusPhase 本枚举项用于表示当前聚焦状态
+ * @property {string} idle - 未聚焦任何天体
+ * @property {string} focusing - 正在播放"聚焦到某个天体"的相机动画
+ * @property {string} focused - 已经聚焦到某个天体上,此时:
+ *      - 动画结束
+ *      - OrbitControls已重新启用
+ *      - panel已显示
+ * @property {string} clearing - 正在播放"从某个天体退出聚焦"的相机动画
+ * */
+const FocusPhase = Object.freeze({
+    idle: 'idle',
+    focusing: 'focusing',
+    focused: 'focused',
+    clearing: 'clearing',
+})
+
 export {
     ActionType,
     HoverPhase,
+    FocusPhase,
 }

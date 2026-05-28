@@ -14,6 +14,7 @@ import {
 } from "@/three/planet/index.js";
 import {setPickable} from "@/three/base/raycaster.js";
 import {tickHover} from "@/three/interaction/hover.js";
+import {tickFocus} from "@/three/interaction/focus.js";
 
 /**
  * @type {Number|null} 当前动画循环的requestAnimationFrame句柄
@@ -29,6 +30,11 @@ let controls = null
  * @type {import('@/stores/hover.js').HoverStore|null} 当前引擎实例持有的悬停状态机引用
  * */
 let hoverStore = null
+
+/**
+ * @type {import('@/stores/focus.js').FocusStore|null} 当前引擎实例持有的聚焦状态机引用
+ * */
+let focusStore = null
 
 /**
  * 本函数用于3D场景的初始化:
@@ -48,11 +54,13 @@ let hoverStore = null
  * 7. 监听视口大小变化
  * 8. 启动动画循环
  * @param {HTMLDivElement} container 要挂载canvas的容器DOM
- * @param {import('@/stores/hover.js').HoverStore} store 定义状态机属性和行为的存储对象
+ * @param {import('@/stores/hover.js').HoverStore} hoverStoreInstance 定义悬停状态机属性和行为的存储实例
+ * @param {import('@/stores/focus.js').FocuseStore} focusStoreInstance 定义聚焦状态机属性和行为的存储实例
  * @return {{canvas: HTMLCanvasElement, dispose: Function}} 渲染器使用的canvas DOM元素和销毁函数
  * */
-export async function initEngine(container, store) {
-    hoverStore = store
+export async function initEngine(container, hoverStoreInstance, focusStoreInstance) {
+    hoverStore = hoverStoreInstance
+    focusStore = focusStoreInstance
 
     try {
         // 1. 创建canvas对象并挂载到给定的容器DOM中
@@ -122,10 +130,11 @@ export async function initEngine(container, store) {
  * 本函数用于逐帧更新场景并渲染:
  * 1. 更新天空球的自转
  * 2. 更新太阳的自转
- * 3. 维护悬停状态机的状态变更
- * 4. 更新行星的公转和自转
- * 5. 更新控制器
- * 6. 渲染辉光效果
+ * 3. 维护聚焦状态机的状态变更
+ * 4. 仅在非聚焦状态时维护悬停状态机的状态变更
+ * 5. 更新行星的公转和自转
+ * 6. 更新控制器
+ * 7. 渲染辉光效果
  * Tips: 由于本函数由requestAnimationFrame()调度,所以无法传参,这也是为什么把controls/hoverState等
  * 变量设置为全局的原因:
  *      1. 方便销毁
@@ -141,16 +150,22 @@ function startAnimation() {
     // 2. 更新太阳的自转
     setSunAutoRotation()
 
-    // 3. 维护悬停状态机的状态变更
-    tickHover(now, hoverStore, camera, renderer.domElement)
+    // 3. 维护聚焦状态机的状态变更(聚焦的优先级高于悬停)
+    tickFocus(now, focusStore, camera, controls)
 
-    // 4. 更新行星的公转和自转
-    updatePlanets(!hoverStore.shouldFreezeRevolution)
+    // 4. 仅在非聚焦状态时维护悬停状态机的状态变更(聚焦时不显示label)
+    if (!focusStore.inFocusMode) {
+        tickHover(now, hoverStore, camera, renderer.domElement)
+    }
 
-    // 5. 更新控制器
+    // 5. 更新行星的公转和自转
+    const shouldFreezeRevolution = hoverStore.shouldFreezeRevolution || focusStore.shouldFreezeRevolution
+    updatePlanets(!shouldFreezeRevolution)
+
+    // 6. 更新控制器
     controls.update()
 
-    // 6. 渲染辉光效果
+    // 7. 渲染辉光效果
     renderBloomFrame()
 }
 
@@ -162,6 +177,7 @@ function startAnimation() {
  * 4. 销毁后期处理管线
  * 5. 销毁渲染器
  * 6. 复位悬停状态机的引用
+ * 7. 复位悬停状态机的引用
  * */
 function dispose () {
     // 1. 取消对视口大小的监听
@@ -187,6 +203,9 @@ function dispose () {
 
     // 6. 复位悬停状态机的引用
     hoverStore = null
+
+    // 7. 复位聚焦状态机的引用
+    focusStore = null
 }
 
 /**

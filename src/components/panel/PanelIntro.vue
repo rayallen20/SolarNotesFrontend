@@ -1,7 +1,7 @@
 <template>
 <div class="panel-intro">
     <!-- 标题开始 -->
-    <h2>网络安全管理</h2>
+    <h2>{{focusStore.panelText !== null ? focusStore.panelText.title : ''}}</h2>
     <!-- 标题结束 -->
 
     <!-- 分割线开始 -->
@@ -9,21 +9,23 @@
     <!-- 分割线结束 -->
 
     <!-- 段落开始 -->
-    <p>
-        150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.
-        150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.
-        150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内容.150字之内的内
-    </p>
+    <p>{{focusStore.panelText !== null ? focusStore.panelText.intro : ''}}</p>
     <!-- 段落结束 -->
 </div>
 </template>
 
 <script setup>
 import CutOffLine from "@/components/common/CutOffLine.vue";
+import {useFocusStore} from "@/stores/focus.js";
 
 defineOptions({
     name: 'PanelIntro',
 })
+
+/**
+ * @type {import('@/stores/focus.js').FocusStore} 聚焦状态机的引用
+ * */
+const focusStore = useFocusStore()
 </script>
 
 <style scoped>

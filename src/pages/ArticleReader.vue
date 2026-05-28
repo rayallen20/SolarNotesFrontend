@@ -11,5 +11,7 @@ defineOptions({
 </script>
 
 <style scoped>
-
+.article-reader {
+    color: black;
+}
 </style>

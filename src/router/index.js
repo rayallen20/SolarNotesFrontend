@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import App from "@/App.vue";
+import SolarCanvas from "@/pages/SolarCanvas.vue";
 
 const routes = [
     {
@@ -10,7 +10,7 @@ const routes = [
     },
     {
         path: '/solar',
-        component: import('@/pages/SolarCanvas.vue'),
+        component: SolarCanvas,
         name: 'solar',
     },
     {

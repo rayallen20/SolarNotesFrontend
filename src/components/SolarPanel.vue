@@ -1,5 +1,9 @@
 <template>
-<div class="solar-panel">
+<div
+    class="solar-panel"
+    :class="{open: focusStore.shouldShowPanel}"
+    :style="{'--panel-animation-ms': focusStore.animation.durationMs + 'ms'}"
+>
     <div class="content-warp">
         <PanelIntro></PanelIntro>
         <PanelList></PanelList>
@@ -13,10 +17,16 @@ import PanelIntro from '@/components/panel/PanelIntro.vue'
 import PanelList from "@/components/panel/PanelList.vue";
 import LuminousAction from "@/components/common/LuminousAction.vue";
 import {ActionType} from "@/lib/enum.js";
+import {useFocusStore} from "@/stores/focus.js";
 
 defineOptions({
     name: 'SolarPanel',
 })
+
+/**
+ * @type {import('@/stores/focus.js').FocusStore} 聚焦状态机的引用
+ * */
+const focusStore = useFocusStore()
 </script>
 
 <style scoped>
@@ -30,8 +40,7 @@ defineOptions({
     transform: translateX(-100%);
     opacity: 0;
     pointer-events: none;
-    /* Tips: 这里要和状态机中配置的动画时间相同 */
-    transition: transform 0.6s ease, opacity 0.6s ease;
+    transition: transform var(--panel-animation-ms, 600ms) ease, opacity var(--panel-animation-ms, 600ms) ease;
     will-change: transform, opacity;
 
     width: 60%;
