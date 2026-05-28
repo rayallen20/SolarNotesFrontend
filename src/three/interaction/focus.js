@@ -1,9 +1,9 @@
 import * as THREE from 'three'
 import {pickHoveredBody} from "@/three/base/raycaster.js";
-import {findAncestorByName} from "@/three/lib/findAncestorByName.js";
 import {getWorldRadius} from "@/three/lib/projection.js";
 import {easeInOut} from "@/lib/easing.js";
 import {FocusPhase} from "@/lib/enum.js";
+import {resolveAnchor} from "@/three/lib/resolveAnchor.js";
 
 // 相机数学配置常量
 /**
@@ -93,17 +93,8 @@ const homeControlsTarget = new THREE.Vector3()
  * @return {import('three').Object3D|null} 命中锚点天体则返回锚点天体(sunAxis/planet.root),否则返回null
  * */
 function resolveFocusAnchor(ndcCoordinate, camera) {
-    const hit = pickHoveredBody(ndcCoordinate, camera)
-    if (hit === null) {
-        return null
-    }
-
-    const anchorName = hit.userData.anchorPointName
-    if (typeof  anchorName !== 'string' || anchorName === '') {
-        return null
-    }
-
-    return findAncestorByName(hit, anchorName)
+    const hitObject = pickHoveredBody(ndcCoordinate, camera)
+    return resolveAnchor(hitObject)
 }
 
 /**

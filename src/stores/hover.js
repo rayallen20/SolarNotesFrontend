@@ -2,7 +2,7 @@ import {defineStore} from "pinia";
 import {computed, ref, shallowRef} from "vue";
 import * as THREE from 'three'
 import {HoverPhase} from "@/lib/enum.js";
-import {findAncestorByName} from "@/three/lib/findAncestorByName.js";
+import {resolveAnchor} from "@/three/lib/resolveAnchor.js";
 
 /**
  * @typedef {Object} Pointer 鼠标位置快照信息,由SolarCanvas组件的DOM事件每帧更新
@@ -199,12 +199,7 @@ export const useHoverStore = defineStore('hover', () => {
         }
 
         // 查找祖先锚点Mesh
-        const anchorName = hitObject.userData.anchorPointName
-        if (typeof anchorName !== 'string' || anchorName === '') {
-            return
-        }
-
-        const anchor = findAncestorByName(hitObject, anchorName)
+        const anchor = resolveAnchor(hitObject)
         if (anchor === null) {
             return
         }
