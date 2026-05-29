@@ -7,6 +7,25 @@ import {resolveAnchor} from "@/three/lib/resolveAnchor.js";
 
 // 相机数学配置常量
 /**
+ * @type {Number} 聚焦时相机距离Y轴正负极点的最小角度(单位: 度).聚焦动画结束后:
+ *      - 该值越小则相机更接近俯视/仰视
+ *      - 该值越大则相机更远离极点,俯视感损失更多
+ * */
+const MIN_POLAR_OFFSET_DEG = 20
+
+/**
+ * @type {Number} 从被聚焦天体指向相机方向的单位向量在Y轴上的分量绝对值的最大值
+ * 该值由MIN_POLAR_OFFSET_DEG转换而来,用于在initFocusAnimation中限制相机位置,使其不会过于接近极点
+ * */
+const MAX_Y_ABS = Math.cos(THREE.MathUtils.degToRad(MIN_POLAR_OFFSET_DEG))
+
+/**
+ * @type {Number} 从被聚焦天体指向相机方向的单位向量在XZ平面上分量的最小长度
+ * 该值由MIN_POLAR_OFFSET_DEG转换而来,用于在initFocusAnimation中限制相机位置,使其不会过于接近极点
+ * */
+const MIN_XZ_LEN = Math.sin(THREE.MathUtils.degToRad(MIN_POLAR_OFFSET_DEG))
+
+/**
  * @type {Number} 缩放因子: 本值越小则相机离天体越近,天体在屏幕上越大
  * */
 const ZOOM_FACTOR = 1.25
@@ -125,6 +144,27 @@ function initFocusAnimation(store, camera, controls, nowMs) {
 
     // 计算从被聚焦天体指向相机的方向
     targetToCameraDirection.copy(camera.position).sub(targetPosition).normalize()
+
+    // 限制聚焦后相机的极角,使相机距离Y轴极点的角度不小于MIN_POLAR_OFFSET_DEG
+    if (Math.abs(targetToCameraDirection.y) > MAX_Y_ABS) {
+        const verticalSign = Math.sign(targetToCameraDirection.y) || 1
+        const horizontalLen = Math.hypot(targetToCameraDirection.x, targetToCameraDirection.z)
+
+        // 相机几乎位于天体正上/正下方,此时无方位角可以保留,默认沿世界坐标系下的X轴正方向倾斜即可
+        if (horizontalLen < 1e-6) {
+            targetToCameraDirection.set(
+                MIN_XZ_LEN,
+                verticalSign * MAX_Y_ABS,
+                0,
+            )
+        } else {
+            // 保留原方位角,仅缩放横向分量
+            const scale = MIN_XZ_LEN / horizontalLen
+            targetToCameraDirection.x *= scale
+            targetToCameraDirection.z *= scale
+            targetToCameraDirection.y = verticalSign * MAX_Y_ABS
+        }
+    }
 
     // 计算相机到被聚焦天体的距离
     // 相机到被聚焦天体的距离 = 让被聚焦天体的投影圆半径在垂直方向上占满屏幕的距离 * 缩放因子
