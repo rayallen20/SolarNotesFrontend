@@ -36,8 +36,8 @@ defineOptions({
 
 /**
  * @type {Number} 视口安全边距阈值:
- * - label与视口下边缘的距离需大于该值,label才能出现在投影圆的正下方
- * - 否则label需要翻转到投影圆的正上方
+ * - 垂直方向: label与视口下边缘的距离需大于该值,label才能出现在投影圆的正下方;否则label需要翻转到投影圆的正上方
+ * - 水平方向: label靠左/右溢出时,推回视口内之后,label左/右边缘距视口边缘需保持该距离
  * */
 const VIEWPORT_SAFE_MARGIN_THRESHOLD_PX = 8
 
@@ -89,8 +89,14 @@ const positionStyle = computed(() => {
     const height = labelHeight.value
     const depth = notchDepth.value
 
-    // 水平位置: 凹口中点在投影圆圆心的正下方
-    const left = centerX - width / 2
+    // 水平位置: 理想情况下凹口中点在投影圆圆心的正下方
+    const rawLeft = centerX - width / 2
+    // 水平方向溢出时,将label推回视口内,直到完整显示
+    // Tips: 移动后label顶部凹口中点与投影圆圆心的连线将不再垂直于视口的水平方向
+    const left = Math.min(
+        Math.max(rawLeft, VIEWPORT_SAFE_MARGIN_THRESHOLD_PX),
+        window.innerWidth - width - VIEWPORT_SAFE_MARGIN_THRESHOLD_PX,
+    )
 
     // 垂直位置: 顶部凹口中点位于投影圆底部,即: 顶部凹口中点与投影圆相切
     const downTop = centerY + radius - depth
