@@ -156,6 +156,9 @@ function startAnimation() {
     // 4. 仅在非聚焦状态时维护悬停状态机的状态变更(聚焦时不显示label)
     if (!focusStore.inFocusMode) {
         tickHover(now, hoverStore, camera, renderer.domElement)
+    } else {
+        // 聚焦期间tickHover()不被调用,所以需要维护悬停状态机中用于标识鼠标当前是否悬停在可聚焦天体上的标量
+        hoverStore.setPointerOverBody(false)
     }
 
     // 5. 更新行星的公转和自转
