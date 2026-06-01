@@ -2,10 +2,12 @@ import {HoverPhase} from "@/lib/enum.js";
 import {calcProjection, distanceToProjectionEdgePx} from "@/three/lib/projection.js";
 import {pickHoveredBody} from "@/three/base/raycaster.js";
 import {isFarRect, isNearRect} from "@/three/lib/rect.js";
+import {resolveAnchor} from "@/three/lib/resolveAnchor.js";
 
 /**
  * @typedef {(nowMs: Number, store: import('@/stores/hover.js').HoverStore,
- * camera: import('three').PerspectiveCamera, domElement: HTMLCanvasElement) => void} PhaseHandler 状态机各阶段对应的处理函数
+ * camera: import('three').PerspectiveCamera, domElement: HTMLCanvasElement,
+ * hitObject: import('three').Object3D|null) => void} PhaseHandler 状态机各阶段对应的处理函数
  * */
 
 /**
@@ -89,13 +91,19 @@ function tickHover(nowMs, store, camera, domElement) {
         store.setNearLabel(false)
     }
 
-    // step4. 按当前状态调用对应处理函数
+    // step4. 投射检测 根据投射检测的结果维护状态机中用于标识鼠标当前是否悬停在可聚焦天体上的标量
+    const pointer = store.pointer
+    const hitObject = pickHoveredBody(pointer.ndcCoordinate, camera)
+    const isPointerOverBody = resolveAnchor(hitObject) !== null
+    store.setPointerOverBody(isPointerOverBody)
+
+    // step5. 按当前状态调用对应处理函数
     const handler = phaseHandlers[store.phase]
     // 防御性编程: 理论上handler是不可能为undefined的,这里做判断,是为了防止
     // 1. store.phase被不可预料的修改
     // 2. 若未来扩展了HoverPhase的枚举,但此处没有同步新增状态处理函数,则会报错
     if (handler !== undefined) {
-        handler(nowMs, store, camera, domElement)
+        handler(nowMs, store, camera, domElement, hitObject)
     }
 }
 
@@ -105,9 +113,9 @@ function tickHover(nowMs, store, camera, domElement) {
  * @param {import('@/stores/hover.js').HoverStore} store 存储中定义的状态机属性和行为
  * @param {import('three').PerspectiveCamera} camera 相机对象
  * @param {HTMLCanvasElement} _domElement 渲染场景的DOM元素 (其实本函数用不到该参数,只是为了调用时的统一,故写了此形参)
+ * @param {import('three').Object3D|null} hitObject 投射检测命中的3D物体
  * */
-function handleIdle(nowMs, store, camera, _domElement) {
-    const hitObject = pickHoveredBody(store.pointer.ndcCoordinate, camera)
+function handleIdle(nowMs, store, camera, _domElement, hitObject) {
     if (hitObject !== null) {
         store.enterBody(hitObject)
     }
@@ -118,9 +126,10 @@ function handleIdle(nowMs, store, camera, _domElement) {
  * @param {Number} nowMs 当前时间戳(单位: 毫秒)
  * @param {import('@/stores/hover.js').HoverStore} store 存储中定义的状态机属性和行为
  * @param {import('three').PerspectiveCamera} camera 相机对象
- * @param {HTMLCanvasElement} domElement 渲染场景的DOM元素
+ * @param {HTMLCanvasElement} _domElement 渲染场景的DOM元素
+ * @param {import('three').Object3D|null} hitObject 投射检测命中的3D物体
  * */
-function handleBody(nowMs, store, camera, domElement) {
+function handleBody(nowMs, store, camera, _domElement, hitObject) {
     // 优先级1. 若激活天体当前处于锁定状态 则说明鼠标:
     // - case1. 靠近label
     // - case2. 在label上
@@ -132,8 +141,6 @@ function handleBody(nowMs, store, camera, domElement) {
 
     // 优先级2. 仍然命中某个天体
     // 此时让enterBody()内部判断命中的天体是否发生改变即可
-    const pointer = store.pointer
-    const hitObject = pickHoveredBody(pointer.ndcCoordinate, camera)
     if (hitObject !== null) {
         store.enterBody(hitObject)
         return
@@ -141,6 +148,7 @@ function handleBody(nowMs, store, camera, domElement) {
 
     // 优先级3: 进入粘滞区
     // 若鼠标和当前激活天体的投影之间的距离小于进入粘滞区的距离时,则进入sticky状态
+    const pointer = store.pointer
     const projection = store.activeProjection
     const sticky = store.sticky
     const distance = distanceToProjectionEdgePx(pointer.screenPx, projection.centerPx, projection.radiusPx)
@@ -159,9 +167,10 @@ function handleBody(nowMs, store, camera, domElement) {
  * @param {Number} nowMs 当前时间戳(单位: 毫秒)
  * @param {import('@/stores/hover.js').HoverStore} store 存储中定义的状态机属性和行为
  * @param {import('three').PerspectiveCamera} camera 相机对象
- * @param {HTMLCanvasElement} domElement 渲染场景的DOM元素
+ * @param {HTMLCanvasElement} _domElement 渲染场景的DOM元素
+ * @param {import('three').Object3D|null} hitObject 投射检测命中的3D物体
  * */
-function handleSticky(nowMs, store, camera, domElement) {
+function handleSticky(nowMs, store, camera, _domElement, hitObject) {
     // 防御性措施: 在sticky状态下,activeEntity不可能为null.而activeEntity想要被置为null,
     // 只有store.enterIdle()函数能够触发.此处的防御措施和store.enterBody()函数中的意义相同,防御的是:
     // 1. 外部绕过store中定义的函数,直接修改状态机的字段
@@ -178,8 +187,6 @@ function handleSticky(nowMs, store, camera, domElement) {
     }
 
     // 优先级2: 鼠标从粘滞区移动到了天体上,此时应进入body状态
-    const pointer = store.pointer
-    const hitObject = pickHoveredBody(pointer.ndcCoordinate, camera)
     // Tips: 这里检测是否靠近label或悬停在label上,是为了防止鼠标既在label上或者在label附近,且又命中了天体
     if (hitObject !== null && !store.isActiveLocked) {
         store.enterBody(hitObject)
@@ -200,6 +207,7 @@ function handleSticky(nowMs, store, camera, domElement) {
     if (elapsed < stickyConfig.minHoldMs) {
         return
     }
+    const pointer = store.pointer
     const projection = store.activeProjection
     const distance = distanceToProjectionEdgePx(pointer.screenPx, projection.centerPx, projection.radiusPx)
     if (distance >= stickyConfig.exitEdgeDistancePx) {
@@ -213,16 +221,15 @@ function handleSticky(nowMs, store, camera, domElement) {
  * @param {import('@/stores/hover.js').HoverStore} store 存储中定义的状态机属性和行为
  * @param {import('three').PerspectiveCamera} camera 相机对象
  * @param {HTMLCanvasElement} _domElement 渲染场景的DOM元素 (其实本函数用不到该参数,只是为了调用时的统一,故写了此形参)
+ * @param {import('three').Object3D|null} hitObject 投射检测命中的3D物体
  * */
-function handleLabel(nowMs, store, camera, _domElement) {
+function handleLabel(nowMs, store, camera, _domElement, hitObject) {
     // 优先级1: 鼠标扔停留在label上或仍在label附近,则保持label状态不变即可,不需要做任何处理
     if (store.isActiveLocked) {
         return
     }
 
     // 优先级2: 鼠标离开label后,命中了天体,则进入body状态
-    const pointer = store.pointer
-    const hitObject = pickHoveredBody(pointer.ndcCoordinate, camera)
     if (hitObject !== null) {
         store.enterBody(hitObject)
         return

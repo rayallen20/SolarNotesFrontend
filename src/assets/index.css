@@ -24,3 +24,34 @@ canvas {
     width: 100%;
     height: 100%;
 }
+
+/* 所有元素均使用的默认鼠标样式 */
+*, *::before, *::after {
+    cursor: url("@/assets/cursors/cursor-default.png") 8 2, default;
+}
+
+/* 可点击层使用的鼠标样式 */
+a[href],
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select,
+summary,
+label[for] {
+    cursor: url("@/assets/cursors/cursor-pointer.png") 12 0, pointer;
+}
+
+/* 悬停在天体上(即悬停状态机为body状态)时,canvas使用可点击层的鼠标样式 */
+.canvas-container.is-clickable canvas {
+    cursor: url("@/assets/cursors/cursor-pointer.png") 12 0, pointer;
+}
+
+/* 禁用层: 禁用状态的可点击元素使用默认鼠标样式 */
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled="true"] {
+    cursor: url('@/assets/cursors/cursor-default.png') 8 2, default;
+}

@@ -1,6 +1,11 @@
 <template>
     <div class="solar-canvas">
-        <div ref="container" class="canvas-container"></div>
+        <div
+            ref="container"
+            class="canvas-container"
+            :class="{'is-clickable': hoverStore.shouldUseClickableCursor}"
+        >
+        </div>
         <SolarLabel></SolarLabel>
         <SolarPanel></SolarPanel>
     </div>

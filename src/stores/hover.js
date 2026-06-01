@@ -88,6 +88,13 @@ export const useHoverStore = defineStore('hover', () => {
         hasEverMoved: false,
     }
 
+    /**
+     * @type {import('vue').Ref<Boolean>} 本标量用于标识鼠标当前是否悬停在可聚焦天体上,由tickHover()逐帧根据投射检测维护
+     * Tips: 由于本标量需被计算属性shouldUseClickableCursor读取,故设计成响应式
+     * Tips: 本标量与phase的含义不同,本标量仅反映投射检测此刻是否命中可聚焦天体,当鼠标为天体和凹口的重合部分时,本标量值为true
+     * */
+    const isPointerOverBody = ref(false)
+
     // PART4. label相关信息
     /**
      * @type {import('vue').ShallowRef<DOMRect|null>} label的屏幕矩形
@@ -166,6 +173,13 @@ export const useHoverStore = defineStore('hover', () => {
             title: entity.userData.title,
             intro: entity.userData.intro,
         }
+    })
+
+    /**
+     * @type {import('vue').ComputedRef<Boolean>} 本派生量用于标识当前是否使用可点击层的鼠标样式
+     * */
+    const shouldUseClickableCursor = computed(() => {
+        return isPointerOverBody.value
     })
 
     // mutations/actions: 状态转换
@@ -295,20 +309,28 @@ export const useHoverStore = defineStore('hover', () => {
         activeProjection.value = projection
     }
 
+    /**
+     * 本函数用于设置标识鼠标当前是否悬停在可聚焦天体上的标量
+     * @param {Boolean} flag true: 鼠标当前悬停在可聚焦天体上; false: 鼠标当前不在可聚焦天体上
+     * */
+    function setPointerOverBody(flag) {
+        isPointerOverBody.value = flag
+    }
+
     return {
         // state
         phase, activeEntity, activeProjection, pointer, labelRect,
         isLabelHover, isNearLabel, sticky, labelHysteresis,
 
         // computed
-        shouldShowLabel, shouldFreezeRevolution, isActiveLocked, labelText,
+        shouldShowLabel, shouldFreezeRevolution, isActiveLocked, labelText, shouldUseClickableCursor,
 
         // mutations/actions: 状态转换
         enterIdle, enterBody, enterSticky, enterLabel,
 
         // mutations/actions: 外部设置store
         setPointerNDC, setPointerScreen, setPointerInCanvas, markPointerMoved,
-        setLabelRect, setLabelHover, setNearLabel, setActiveProjection,
+        setLabelRect, setLabelHover, setNearLabel, setActiveProjection, setPointerOverBody,
     }
 })
 
