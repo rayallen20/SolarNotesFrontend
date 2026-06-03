@@ -10,14 +10,18 @@
 
         <!-- 斜纹条开始 -->
         <div class="stripe-chip">
-            <!-- 平行四边形开始 -->
-            <div
-                class="stripe"
-                v-for="n in 6"
-                :key="n"
-                :style="`--i: ${n - 1}`">
+            <!-- 传送带(用于整体平移的图层)开始 -->
+            <div class="stripe-track">
+                <!-- 平行四边形开始 -->
+                <div
+                    class="stripe"
+                    v-for="n in 9"
+                    :key="n"
+                    :style="`--i: ${n - 2}`">
+                </div>
+                <!-- 平行四边形结束 -->
             </div>
-            <!-- 平行四边形结束 -->
+            <!-- 传送带结束 -->
         </div>
         <!-- 斜纹条结束 -->
     </div>
@@ -88,16 +92,21 @@ defineOptions({
 /* 斜纹条开始 */
 .outer-decor-layer .stripe-chip {
     /* 斜纹条宽度 */
-    --chip-width: 85px;
+    --chip-width: 136px;
     /* 斜纹条高度 */
     --chip-height: 5px;
     /* 斜纹条斜纹延伸长度 (相当于斜纹的水平偏移量,和凹口斜率相同) */
     --chip-slope-run-length: calc(var(--chip-height) * var(--notch-run-x) / var(--notch-depth));
 
     /* 平行四边形底边长度 */
-    --stripe-bottom-line-length: 7px;
+    --stripe-bottom-line-length: 12px;
     /* 平行四边形间隙 */
     --stripe-gap: 5px;
+
+    /* 平移周期: 平行四边形水平间距 = 底边长度 + 间隙 */
+    --stripe-pitch: calc(var(--stripe-bottom-line-length) + var(--stripe-gap));
+    /* 走马灯单词循环时长 该值越小速度越快 */
+    --marquee-duration: 1s;
 
     position: absolute;
     top: 8px;
@@ -116,6 +125,32 @@ defineOptions({
         0 var(--chip-height)
     );
 }
+
+/*传送带开始*/
+.outer-decor-layer .stripe-chip .stripe-track {
+    position: absolute;
+    inset: 0;
+    animation: stripe-marquee var(--marquee-duration) linear infinite;
+}
+
+@keyframes stripe-marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        /* 平移1个pitch */
+        transform: translateX(var(--stripe-pitch));
+    }
+}
+
+/* 兼容减少动态效果: 停止走马灯动画 退化为静态斜纹条 */
+@media (prefers-reduced-motion: reduce) {
+    .outer-decor-layer .stripe-chip .stripe-track {
+        animation: none;
+    }
+}
+/*传送带结束*/
+
 /* 斜纹条结束 */
 
 /* 平行四边形开始 */
@@ -127,8 +162,8 @@ defineOptions({
     /* 平行四边形宽度 = 底边长度 + 斜纹延伸长度 */
     /* Tips: 因为平行四边形的顶边比底边偏右--chip-slope-run-length个像素 */
     width: calc(var(--stripe-bottom-line-length) + var(--chip-slope-run-length));
-    /* 水平方向位置 = i * (平行四边形宽度 + 平行四边形间隙) */
-    left: calc(var(--i) * (var(--stripe-bottom-line-length) + var(--stripe-gap)));
+    /* 水平方向位置 = i * (平移周期) */
+    left: calc(var(--i) * var(--stripe-pitch));
 
     background: var(--border);
 
