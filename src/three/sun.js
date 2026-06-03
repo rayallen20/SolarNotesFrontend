@@ -82,10 +82,10 @@ const config = {
         intensity: 3.5,
     },
     scale: {
-        size: 4,
+        size: 20,
     },
     hover: {
-        radius: 2.0,
+        radius: 10.0,
     },
     autoRotation: {
         speed: 0.01,

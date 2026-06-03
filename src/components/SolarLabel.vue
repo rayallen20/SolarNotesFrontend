@@ -77,7 +77,9 @@ const hoverStore = useHoverStore()
 /**
  * @type {import('vue').ComputedRef<{left: String, top: String}>} 用于为label做绝对定位的CSS样式
  * - 视口内可放置时: label的顶部凹口中点位于投影圆圆心正下方,即: 顶部凹口中点与投影圆相切
- * - 视口内不可放置时: label翻转到投影圆圆心的正上方,此时label底部凹口中点位于投影圆圆心正上方,即: 底部凹口中点与投影圆相切
+ * - 视口内不可放置时:
+ *      - label在视口下方不可放置: label翻转到投影圆圆心的正上方,此时label底部凹口中点位于投影圆圆心正上方,即: 底部凹口中点与投影圆相切
+ *      - label在视口左/右不可放置: 向右/左移动label,直至可放置
  * */
 const positionStyle = computed(() => {
     const projection = hoverStore.activeProjection
@@ -107,9 +109,16 @@ const positionStyle = computed(() => {
 
     // 计算垂直位置
     let top = downTop
+    // 选定垂直方向的上下
     if (shouldFlipUp) {
         top = centerY - radius - (height - depth)
     }
+
+    // 垂直方向溢出时,将label推回视口内,直至完整显示
+    top = Math.min(
+        Math.max(top, VIEWPORT_SAFE_MARGIN_THRESHOLD_PX),
+        window.innerHeight - height - VIEWPORT_SAFE_MARGIN_THRESHOLD_PX,
+    )
 
     return {
         left: `${left}px`,

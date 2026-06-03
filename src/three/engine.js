@@ -15,6 +15,7 @@ import {
 import {setPickable} from "@/three/base/raycaster.js";
 import {tickHover} from "@/three/interaction/hover.js";
 import {tickFocus} from "@/three/interaction/focus.js";
+import {tickMinScreenSize} from "@/three/planet/helper/minScreenSize.js";
 
 /**
  * @type {Number|null} 当前动画循环的requestAnimationFrame句柄
@@ -130,11 +131,12 @@ export async function initEngine(container, hoverStoreInstance, focusStoreInstan
  * 本函数用于逐帧更新场景并渲染:
  * 1. 更新天空球的自转
  * 2. 更新太阳的自转
- * 3. 维护聚焦状态机的状态变更
- * 4. 仅在非聚焦状态时维护悬停状态机的状态变更
- * 5. 更新行星的公转和自转
- * 6. 更新控制器
- * 7. 渲染辉光效果
+ * 3. 维护行星最小屏幕尺寸
+ * 4. 维护聚焦状态机的状态变更
+ * 5. 仅在非聚焦状态时维护悬停状态机的状态变更
+ * 6. 更新行星的公转和自转
+ * 7. 更新控制器
+ * 8. 渲染辉光效果
  * Tips: 由于本函数由requestAnimationFrame()调度,所以无法传参,这也是为什么把controls/hoverState等
  * 变量设置为全局的原因:
  *      1. 方便销毁
@@ -150,10 +152,13 @@ function startAnimation() {
     // 2. 更新太阳的自转
     setSunAutoRotation()
 
-    // 3. 维护聚焦状态机的状态变更(聚焦的优先级高于悬停)
+    // 3. 维护行星最小屏幕尺寸
+    tickMinScreenSize(planets, camera, renderer.domElement.clientHeight, focusStore.focusedEntity)
+
+    // 4. 维护聚焦状态机的状态变更(聚焦的优先级高于悬停)
     tickFocus(now, focusStore, camera, controls)
 
-    // 4. 仅在非聚焦状态时维护悬停状态机的状态变更(聚焦时不显示label)
+    // 5. 仅在非聚焦状态时维护悬停状态机的状态变更(聚焦时不显示label)
     if (!focusStore.inFocusMode) {
         tickHover(now, hoverStore, camera, renderer.domElement)
     } else {
@@ -161,15 +166,17 @@ function startAnimation() {
         hoverStore.setPointerOverBody(false)
     }
 
-    // 5. 更新行星的公转和自转
+    // 6. 更新行星的公转和自转
     const shouldFreezeRevolution = hoverStore.shouldFreezeRevolution || focusStore.shouldFreezeRevolution
     updatePlanets(!shouldFreezeRevolution)
 
-    // 6. 更新控制器
+    // 7. 更新控制器
     controls.update()
 
-    // 7. 渲染辉光效果
+    // 8. 渲染辉光效果
     renderBloomFrame()
+
+    console.log(camera.position)
 }
 
 /**

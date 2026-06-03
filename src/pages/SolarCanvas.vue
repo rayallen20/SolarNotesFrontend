@@ -8,6 +8,7 @@
         </div>
         <SolarLabel></SolarLabel>
         <SolarPanel></SolarPanel>
+        <KeyboardHint></KeyboardHint>
     </div>
 </template>
 
@@ -21,6 +22,8 @@ import {resolveFocusAnchor} from "@/three/interaction/focus.js";
 import {camera} from "@/three/base/camera.js";
 import {useFocusStore} from "@/stores/focus.js";
 import SolarPanel from "@/components/SolarPanel.vue";
+import {useKeyboardFocusNav} from "@/composables/useKeyboardFocusNav.js";
+import KeyboardHint from "@/components/KeyboardHint.vue";
 
 defineOptions({
     name: 'SolarCanvas',
@@ -205,6 +208,8 @@ onBeforeUnmount(() => {
         dispose()
     }
 })
+
+useKeyboardFocusNav()
 </script>
 
 <style scoped>

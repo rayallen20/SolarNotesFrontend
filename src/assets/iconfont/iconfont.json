@@ -1,0 +1,16 @@
+{
+  "id": "5190036",
+  "name": "SolarBlog",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "45462306",
+      "name": "close .icon-close-copy",
+      "font_class": "a-closeicon-close",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    }
+  ]
+}

@@ -15,7 +15,7 @@ const config = {
     aspect: window.innerWidth / window.innerHeight,
     near: 0.1,
     far: 4000,
-    position: new THREE.Vector3(-11, 6, 40),
+    position: new THREE.Vector3(-94.2, 51.4, 342.48),
     lookAt: new THREE.Vector3(0, 0, 0),
 }
 

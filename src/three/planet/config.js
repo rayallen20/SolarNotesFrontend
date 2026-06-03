@@ -50,7 +50,7 @@ export const config = [
         scale: 1,
         rotationSpeed: 0.04,
         orbit: {
-            semiMajorAxis: 15,
+            semiMajorAxis: 24.14,
             eccentricity: 0.2056,
             dipAngle: 7,
             speed: 0.01,
@@ -75,7 +75,7 @@ export const config = [
         scale: 2.5,
         rotationSpeed: -0.0096,
         orbit: {
-            semiMajorAxis: 28,
+            semiMajorAxis: 32.99,
             eccentricity: 0.0068,
             dipAngle: 3.39,
             speed: 0.0039,
@@ -125,7 +125,7 @@ export const config = [
         scale: 1.4,
         rotationSpeed: 0.12,
         orbit: {
-            semiMajorAxis: 59.21,
+            semiMajorAxis: 47.97,
             eccentricity: 0.0934,
             dipAngle: 1.85,
             speed: 0.0013,
@@ -150,7 +150,7 @@ export const config = [
         scale: 29.3,
         rotationSpeed: 0.23,
         orbit: {
-            semiMajorAxis: 202.227,
+            semiMajorAxis: 88.65,
             eccentricity: 0.0489,
             dipAngle: 1.304,
             speed: 0.0002,
@@ -176,7 +176,7 @@ export const config = [
         scale: 24.7,
         rotationSpeed: 0.07,
         orbit: {
-            semiMajorAxis: 370.611,
+            semiMajorAxis: 120.02,
             eccentricity: 0.0542,
             dipAngle: 2.484,
             speed: 0.00008,
@@ -201,7 +201,7 @@ export const config = [
         scale: 10.5,
         rotationSpeed: 0.13,
         orbit: {
-            semiMajorAxis: 745.773,
+            semiMajorAxis: 170.24,
             eccentricity: 0.0472,
             dipAngle: 0.771,
             speed: 0.00003,
@@ -226,7 +226,7 @@ export const config = [
         scale: 10.2,
         rotationSpeed: 0.34,
         orbit: {
-            semiMajorAxis: 1165.91,
+            semiMajorAxis: 212.85,
             eccentricity: 0.0087,
             dipAngle: 1.77,
             speed: 0.00001,

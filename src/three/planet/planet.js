@@ -18,6 +18,7 @@ import {setSpinAutoRotation} from "@/three/planet/helper/autoRotation.js";
  * @property {import('three').Object3D|null} model 行星的GLTF模型,在调用`initPlanet()`函数之前为null
  * @property {Number} orbitRad 行星当前公转位置的弧度 (角度 * 2π / 360°)
  * @property {Array<import('three').Mesh>} pickableMeshes 可拾取的网格列表,在调用`initPlanet()`函数之前为[]
+ * @property {Number} baseVisibleRadius 行星可见半径,供相机伸缩至屏幕最小尺寸时使用
  * */
 
 /**
@@ -58,6 +59,7 @@ function createPlanet(config) {
         model: null,
         orbitRad: 0,
         pickableMeshes: [],
+        baseVisibleRadius: config.scale / 2,
     }
 }
 
