@@ -10,7 +10,12 @@
   },
   "dependencies": {
     "@tweenjs/tween.js": "^25.0.0",
+    "dompurify": "^3.4.8",
+    "highlight.js": "^11.11.1",
+    "marked": "^18.0.4",
+    "marked-highlight": "^2.2.4",
     "pinia": "^3.0.4",
+    "simplebar": "^6.3.3",
     "three": "^0.184.0",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"
