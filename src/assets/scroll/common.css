@@ -1,0 +1,35 @@
+.catalogue-tree .simplebar-track.simplebar-vertical,
+.article-pane .article-body .simplebar-track.simplebar-vertical,
+.catalogue-tree .simplebar-track.simplebar-horizontal,
+.article-pane .article-body .simplebar-track.simplebar-horizontal {
+    /* 滚动条背景色 */
+    background: rgba(33, 170, 255, 0.10);
+    /* 滚动条圆角(Tips: 这里设置的是滚动条的边框,不是滑块的) */
+    border-radius: 100px;
+}
+
+/* 设置滑块样式 */
+.catalogue-tree .simplebar-track.simplebar-vertical .simplebar-scrollbar::before,
+.article-pane .article-body .simplebar-track.simplebar-vertical .simplebar-scrollbar::before,
+.catalogue-tree .simplebar-track.simplebar-horizontal .simplebar-scrollbar::before,
+.article-pane .article-body .simplebar-track.simplebar-horizontal .simplebar-scrollbar::before {
+    content: "";
+    position: absolute;
+    /*
+    为滑块设置内边距,避免出现滑块顶端溢出盒子的视觉效果
+    Tips: 但是这样会让滑块的视觉上看宽度不足12px 视觉效果反而更好了感觉...
+    */
+    inset: 2px;
+    /* 滑块圆角 */
+    border-radius: 100px;
+    /* 始终显示滑块 (TODO: 调试用) */
+    opacity: 1;
+}
+
+/* 设置滑块悬停时发亮 */
+.catalogue-tree .simplebar-track.simplebar-vertical .simplebar-scrollbar:hover::before,
+.article-pane .article-body .simplebar-track.simplebar-vertical .simplebar-scrollbar:hover::before,
+.catalogue-tree .simplebar-track.simplebar-horizontal .simplebar-scrollbar:hover::before,
+.article-pane .article-body .simplebar-track.simplebar-horizontal .simplebar-scrollbar:hover::before {
+    filter: brightness(1.05);
+}

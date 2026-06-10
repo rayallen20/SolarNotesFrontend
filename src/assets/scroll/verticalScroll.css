@@ -1,0 +1,18 @@
+.catalogue-tree .simplebar-track.simplebar-vertical,
+.article-pane .article-body .simplebar-track.simplebar-vertical {
+    /* 滚动条宽度 */
+    width: 12px;
+}
+
+/* 设置滚动条中的滑块宽度和滚动条宽度相同,避免出现padding */
+.catalogue-tree .simplebar-track.simplebar-vertical .simplebar-scrollbar,
+.article-pane .article-body .simplebar-track.simplebar-vertical .simplebar-scrollbar {
+    width: 12px;
+}
+
+/* 设置滑块样式 */
+.catalogue-tree .simplebar-track.simplebar-vertical .simplebar-scrollbar::before,
+.article-pane .article-body .simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
+    /* 滑块颜色渐变 */
+    background: linear-gradient(0deg, #21AAFF 2.94%, #2CFBFF 91.18%);
+}

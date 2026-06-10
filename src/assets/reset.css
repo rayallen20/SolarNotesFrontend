@@ -100,3 +100,8 @@ input::-ms-input-placeholder {
 .fr {
     float: right;
 }
+
+button {
+    border: none;
+    outline: none;
+}
