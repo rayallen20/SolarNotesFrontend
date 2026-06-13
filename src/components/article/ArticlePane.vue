@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, onMounted, useTemplateRef, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, useTemplateRef, watch} from "vue";
 import {RenderPhase} from "@/lib/enum.js";
 import SimpleBar from "simplebar";
 import {useArticleStore} from "@/stores/article.js";
@@ -86,19 +86,73 @@ const bodyRef = useTemplateRef('body')
  * */
 let scrollbar = null
 
+/**
+ * @type {Array<SimpleBar>} 文章区内会横向溢出的元素的SimpleBar实例集合
+ * 横向溢出的元素:
+ *      - pre元素
+ *      - table元素
+ * */
+let overflowScrollbars = []
+
+/**
+ * 本函数用于为文章区内会横向溢出的元素挂载SimpleBar,使这些元素的横向滚动条可复用全局自定义滚动条样式
+ * - 代码块(pre元素): 直接挂载SimpleBar
+ * - 表格(table元素): 包一层`<div class="table-scroll"></div>`后再挂载SimpleBar
+ *      - 因为SimpleBar会重排子节点,所以直接挂载在table元素上会破坏thead/tbody结构
+ * */
+function mountOverflowScrollbars() {
+    const preElements = bodyRef.value.querySelectorAll('.markdown-body pre')
+    preElements.forEach(preElement => {
+        overflowScrollbars.push(new SimpleBar(preElement))
+    })
+
+    const tableElements = bodyRef.value.querySelectorAll('.markdown-body table')
+    tableElements.forEach(tableElement => {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'table-scroll'
+
+        tableElement.parentNode.insertBefore(wrapper, tableElement)
+        wrapper.appendChild(tableElement)
+
+        overflowScrollbars.push(new SimpleBar(wrapper))
+    })
+}
+
+/**
+ * 本函数用于卸载所有横向溢出元素的SimpleBar实例,在文章内容更新前调用,以避免内存泄漏
+ * */
+function unmountOverflowScrollbars() {
+    overflowScrollbars.forEach(overflowScrollbar => overflowScrollbar.unMount())
+    overflowScrollbars = []
+}
+
 onMounted(() => {
     // 为.article-body挂载SimpleBar
     scrollbar = new SimpleBar(bodyRef.value)
+
+    // 为pre/table元素挂载SimpleBar
+    mountOverflowScrollbars()
 })
 
 // Tips: 从store中读到的Proxy对象会自动解包,因此在组件中拿到的就是一个普通对象,无法被watch
 // Tips: 因此要使用getter()函数的形式,才能被watch()函数监听
 watch(() => articleStore.activeNode, async () => {
+    // Tips: watch默认flush:'pre',跑在DOM更新之前,此刻旧元素仍在DOM中,可干净卸载
+    unmountOverflowScrollbars()
+
     await nextTick()
 
     if (scrollbar !== null) {
         scrollbar.recalculate()
     }
+
+    // DOM已更新为新的md文档对应的HTML,为新的pre/table元素挂载SimpleBar
+    mountOverflowScrollbars()
+})
+
+onBeforeUnmount(() => {
+    // 组件卸载时清理pre/table元素的SimpleBar实例,以避免内存泄漏
+    unmountOverflowScrollbars()
 })
 </script>
 
@@ -150,6 +204,8 @@ watch(() => articleStore.activeNode, async () => {
 /* 激活态且有蒙版时,即为专注目录态.此时文章区仍保持激活态样式,仅收窄宽度即可 */
 .article-active.has-mask {
     width: calc(100% - var(--pane-active-width) - var(--pane-gap));
+    /* 暗化预览不接受交互 开启文章按钮是 .article-body 的兄弟节点,靠自身 pointer-events:auto 仍可点 */
+    pointer-events: none;
 }
 
 .article-active .article-body {

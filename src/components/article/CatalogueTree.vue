@@ -110,6 +110,8 @@ watch(() => articleStore.pendingRevealId, async (revealId) => {
     /* 左缩进 = 深度 * 步长 */
     padding: 12px 0 12px calc(var(--depth) * var(--tree-indent));
     user-select: none;
+    /* 所有行均使用可点击的鼠标样式 */
+    cursor: url("@/assets/cursors/cursor-pointer.png") 12 0, pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -126,7 +128,8 @@ watch(() => articleStore.pendingRevealId, async (revealId) => {
     pointer-events: none;
 }
 
-.tree-node > .row:hover::before {
+.tree-node > .row:hover::before,
+.tree-node.is-active > .row::before {
     opacity: 1;
 }
 
@@ -207,7 +210,8 @@ watch(() => articleStore.pendingRevealId, async (revealId) => {
     transition: color 0.8s ease;
 }
 
-.row:hover > .literal {
+.row:hover > .literal,
+.tree-node.is-active > .row > .literal {
     color: #2CFBFF;
 }
 

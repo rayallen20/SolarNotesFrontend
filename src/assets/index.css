@@ -26,7 +26,7 @@ canvas {
 }
 
 /* 所有元素均使用的默认鼠标样式 */
-*, *::before, *::after {
+html {
     cursor: url("@/assets/cursors/cursor-default.png") 8 2, default;
 }
 

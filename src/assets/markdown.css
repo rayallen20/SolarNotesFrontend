@@ -41,7 +41,6 @@
     margin: 20px 0;
     padding: 16px;
     border-radius: 8px;
-    overflow: auto;
     background: rgba(7, 32, 51, 0.95);
 }
 
@@ -66,4 +65,40 @@
     max-width: 100%;
     height: auto;
     border-radius: 8px;
+}
+
+.markdown-body table {
+    margin: 20px 0;
+    border-collapse: collapse;
+}
+
+.markdown-body th, .markdown-body td {
+    padding: 8px 14px;
+    border: 1px solid rgba(33, 170, 255, 0.35);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.markdown-body th {
+    background: rgba(33, 170, 255, 0.15);
+    font-weight: 700;
+}
+
+/* 表格滚动容器(由ArticlePane在挂载SimpleBar之前包装好) */
+.markdown-body .table-scroll {
+    margin: 20px 0;
+}
+
+/* 容器已负责外边距 内层table去掉自身外边距 */
+.markdown-body .table-scroll table {
+    margin: 0;
+}
+
+/*
+highlight.js的主题给code.hljs自带了 overflow-x: auto,使得其有原生滚动条,
+且把横向溢出拦截在了code元素内,传不到外层的pre元素上
+修改为visible,让溢出传到pre元素上,这样就能由SimpleBar接管横滚了
+*/
+.markdown-body pre code.hljs {
+    overflow-x: visible;
 }

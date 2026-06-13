@@ -3,7 +3,11 @@
         class="tree-node"
         :class="[
             `node-${node.type}`,
-            {'is-collapsed': isCollapsed, animating: isAnimating}
+            {
+                'is-collapsed': isCollapsed,
+                animating: isAnimating,
+                'is-active': isActive,
+            }
         ]"
         :style="{'--depth': depth}"
         :data-id="node.id"
@@ -96,6 +100,13 @@ const hasChildren = computed(() => {
  * */
 const isCollapsed = computed(() => {
     return articleStore.isCollapsed(props.node.id)
+})
+
+/**
+ * @type {import('vue').ComputedRef<Boolean>} 本派生量用于标识本节点是否为当前选中(激活)节点
+ * */
+const isActive = computed(() => {
+    return props.node.id === articleStore.activeNode.id
 })
 
 /**
