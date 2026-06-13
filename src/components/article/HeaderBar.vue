@@ -5,15 +5,21 @@
             <span class="literal">返回太阳系</span>
         </RouterLink>
 
-        <!-- TODO: 后续需要从store中读取内容 -->
-        <h2>网络安全管理</h2>
+        <h2>{{articleStore.breadcrumb}}</h2>
     </div>
 </template>
 
 <script setup>
+import {useArticleStore} from "@/stores/article.js";
+
 defineOptions({
     name: 'HeaderBar',
 })
+
+/**
+ * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机实例
+ * */
+const articleStore = useArticleStore()
 </script>
 
 <style scoped>

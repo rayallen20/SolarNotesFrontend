@@ -16,12 +16,17 @@ defineOptions({
 
 <style scoped>
 .reader-body {
+    /* 左右两栏的间隙宽度 */
+    --pane-gap: 31px;
+    /* 激活态的面板宽度 */
+    --pane-active-width: 70%;
+
     flex: 1 1 auto;
     /* 防止内部把滚动传递给页面 */
     overflow: hidden;
     display: flex;
     justify-content: space-between;
-    column-gap: 31px;
+    column-gap: var(--pane-gap);
     padding: 29px 100px 49px;
 }
 

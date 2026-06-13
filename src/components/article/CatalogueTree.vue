@@ -1,10 +1,6 @@
 <template>
-    <div
-        class="catalogue-tree"
-        ref="root"
-        :class="phase === RenderPhase.nonLeaf ? 'catalogue-active' : 'catalogue-inactive'"
-    >
-        <h3>目录&nbsp;Contact</h3>
+    <div ref="root" class="catalogue-tree" :class="stateClass">
+        <h3>目录&nbsp;Catalogue</h3>
         <ul class="tree">
             <TreeNode :node="treeData" :depth="0"></TreeNode>
         </ul>
@@ -12,28 +8,51 @@
 </template>
 
 <script setup>
-import {onMounted, ref, useTemplateRef} from "vue";
+import {computed, nextTick, onMounted, useTemplateRef, watch} from "vue";
 import SimpleBar from "simplebar";
 import TreeNode from "@/components/article/TreeNode.vue";
 import {treeData} from "@/data/treeData.js";
-import {RenderPhase} from "@/lib/enum.js";
+import {useArticleStore} from "@/stores/article.js";
+import {ensureNodeVisible} from "@/lib/ensureNodeVisible.js";
 
 defineOptions({
     name: 'CatalogueTree',
 })
 
 /**
- * @type {import('vue').Ref<String>} 文章区当前渲染状态
+ * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机实例
  * */
-const phase = ref(RenderPhase.nonLeaf)
+const articleStore = useArticleStore()
 
 /**
- * @type {Readonly<ShallowRef<HTMLDivElement|null>>} 目录区域容器的DOM元素
+ * @type {import('vue').ComputedRef<String>} 目录区当前状态对应的CSS类名
+ * */
+const stateClass = computed(() => {
+    return articleStore.isCatalogueActive ? 'catalogue-active' : 'catalogue-inactive'
+})
+
+/**
+ * @type {import('vue').Readonly<ShallowRef<HTMLDivElement|null>>} 目录区域容器的DOM元素
  * */
 const rootRef = useTemplateRef('root')
 
 onMounted(() => {
     new SimpleBar(rootRef.value)
+})
+
+watch(() => articleStore.pendingRevealId, async (revealId) => {
+    if (revealId === null) {
+        return
+    }
+
+    await nextTick()
+    const options = {
+        behavior: 'smooth',
+        block: 'center',
+    }
+    ensureNodeVisible(rootRef.value, revealId, options)
+
+    articleStore.clearPendingReveal()
 })
 </script>
 
@@ -58,13 +77,13 @@ onMounted(() => {
 
 /* 状态宽度 */
 .catalogue-tree.catalogue-active {
-    width: 70%;
+    width: var(--pane-active-width);
     opacity: 1;
     pointer-events: auto;
 }
 
 .catalogue-tree.catalogue-inactive {
-    width: calc(100% - 70% - 31px);
+    width: calc(100% - var(--pane-active-width) - var(--pane-gap));
     opacity: 0.3;
     pointer-events: none;
 }

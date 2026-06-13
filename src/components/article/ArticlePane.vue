@@ -1,103 +1,104 @@
 <template>
-    <div class="article-pane" :class="[stateClass, {'has-mask': hasMask}]">
+    <div class="article-pane" :class="[stateClass, {'has-mask': articleStore.hasMask}]">
         <div ref="body" class="article-body">
             <!-- 激活态: 梯形 + 标题 + md文档正文 -->
-            <template v-if="phase === RenderPhase.leaf">
+            <template v-if="articleStore.renderPhase === RenderPhase.leaf">
                 <h2 class="title">
                     <div class="left-trapezoid"></div>
-                    <div class="literal">{{sample.name}}</div>
+                    <div class="literal">{{articleStore.activeNode.name}}</div>
                 </h2>
 
-                <div class="article-content markdown-body" v-html="renderedMarkdown"></div>
+                <div class="article-content markdown-body" v-html="articleStore.articleHtml"></div>
 
-                <span class="created-at">{{sample.createdAt}}</span>
+                <span class="created-at">{{articleStore.activeNode.createdAt}}</span>
             </template>
 
             <!-- 非激活态: 标题 + 简介 -->
             <template v-else>
-                <h2 class="title">{{sample.name}}</h2>
+                <h2 class="title">{{articleStore.activeNode.name}}</h2>
 
-                <div class="article-content content">{{sample.intro}}</div>
+                <div class="article-content content">{{articleStore.activeNode.intro}}</div>
 
-                <span class="created-at">{{sample.createdAt}}</span>
+                <span class="created-at">{{articleStore.activeNode.createdAt}}</span>
             </template>
         </div>
 
         <!-- 底部按钮 -->
-        <button v-if="phase === RenderPhase.leaf" class="bottom-button">
+        <!-- 阅读态(选中节点为叶子节点 && 焦点在文章区): 按钮为胶囊形,点击按钮后将焦点转移到目录区 -->
+        <button
+            v-if="articleStore.renderPhase === RenderPhase.leaf && !articleStore.hasMask"
+            class="bottom-button"
+            @click="articleStore.focusCatalogue"
+        >
             <i class="iconfont icon-icon_mulu"></i>
             <span class="literal">专注目录</span>
         </button>
 
-        <button v-else class="bottom-button">
+        <!-- 专注态(选中节点为叶子节点 && 聚焦在目录区): 按钮水平占满文章区,点击按钮后将焦点转移到文章区 -->
+        <button
+            v-else-if="articleStore.hasMask"
+            class="has-mask-button"
+            @click="articleStore.focusArticle"
+        >
+            开启文章
+        </button>
+
+        <!-- 浏览态(初态): 按钮水平占满文章区,点击按钮后选中非叶节点下的第1个叶子节点 -->
+        <button
+            v-else
+            class="bottom-button"
+            @click="articleStore.openArticle"
+        >
             开启文章
         </button>
     </div>
 </template>
 
 <script setup>
-import {computed, onMounted, ref, useTemplateRef} from "vue";
+import {computed, nextTick, onMounted, useTemplateRef, watch} from "vue";
 import {RenderPhase} from "@/lib/enum.js";
-import {renderMarkdownToHtml} from "@/lib/markdown.js";
 import SimpleBar from "simplebar";
+import {useArticleStore} from "@/stores/article.js";
 
 defineOptions({
     name: 'ArticlePane',
 })
 
 /**
- * @type {import('vue').Ref<String>} 文章区当前渲染状态
+ * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机的实例
  * */
-const phase = ref(RenderPhase.nonLeaf)
-
-/**
- * @type {import('vue').Ref<Boolean>} 是否显示蒙版
- * */
-const hasMask = ref(false)
+const articleStore = useArticleStore()
 
 /**
  * @type {import('vue').ComputedRef<String>} 文章区当前状态对应的CSS类名
  * */
 const stateClass = computed(() => {
-    return phase.value === RenderPhase.leaf ? 'article-active' : 'article-inactive'
+    return articleStore.renderPhase === RenderPhase.leaf ? 'article-active' : 'article-inactive'
 })
-
-// md文档静态示例
-const sample = {
-    name: '示例文件名称',
-    intro: '这是非激活态展示的节点简介文本。',
-    createdAt: '2026-01-22',
-    markdown: [
-        '## 示例标题',
-        '',
-        '这是一段示例正文,用于验证 `.markdown-body` 主题、代码高亮与滚动。',
-        '',
-        '- 列表项 A',
-        '- 列表项 B',
-        '',
-        '> 引用块示例',
-        '',
-        '```js',
-        'const a = 1',
-        'console.log(a)',
-        '```',
-        '',
-    ].join('\n'),
-}
-
-/**
- * @type {import('vue').ComputedRef<String>} 根据md文本渲染后的HTML字符串
- * */
-const renderedMarkdown = computed(() => renderMarkdownToHtml(sample.markdown))
 
 /**
  * @type {Readonly<ShallowRef<HTMLDivElement|null>>} 文章区内容容器的DOM元素
  * */
 const bodyRef = useTemplateRef('body')
 
+/**
+ * @type {SimpleBar|null} 自定义样式滚动条实例
+ * */
+let scrollbar = null
+
 onMounted(() => {
     // 为.article-body挂载SimpleBar
-    new SimpleBar(bodyRef.value)
+    scrollbar = new SimpleBar(bodyRef.value)
+})
+
+// Tips: 从store中读到的Proxy对象会自动解包,因此在组件中拿到的就是一个普通对象,无法被watch
+// Tips: 因此要使用getter()函数的形式,才能被watch()函数监听
+watch(() => articleStore.activeNode, async () => {
+    await nextTick()
+
+    if (scrollbar !== null) {
+        scrollbar.recalculate()
+    }
 })
 </script>
 
@@ -143,7 +144,12 @@ onMounted(() => {
 
 /* 激活态样式 */
 .article-active {
-    width: 70%;
+    width: var(--pane-active-width);
+}
+
+/* 激活态且有蒙版时,即为专注目录态.此时文章区仍保持激活态样式,仅收窄宽度即可 */
+.article-active.has-mask {
+    width: calc(100% - var(--pane-active-width) - var(--pane-gap));
 }
 
 .article-active .article-body {
@@ -221,7 +227,7 @@ onMounted(() => {
 
 /* 非激活态样式 */
 .article-inactive {
-    width: calc(100% - 70% - 31px);
+    width: calc(100% - var(--pane-active-width) - var(--pane-gap));
     pointer-events: none;
 }
 

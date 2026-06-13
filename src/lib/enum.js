@@ -59,10 +59,21 @@ const RenderPhase = Object.freeze({
     nonLeaf: 'nonLeaf',
 })
 
+/**
+ * @typedef {Object} FocusedPane 本枚举项用于标识文章页当前被聚焦(占宽70%)的面板
+ * @property {String} catalogue 聚焦目录树面板(浏览态/专注态)
+ * @property {String} article 聚焦文章面板(阅读态)
+ * */
+const FocusedPane = Object.freeze({
+    catalogue: 'catalogue',
+    article: 'article',
+})
+
 export {
     ActionType,
     HoverPhase,
     FocusPhase,
     CatalogueNodeType,
     RenderPhase,
+    FocusedPane,
 }
