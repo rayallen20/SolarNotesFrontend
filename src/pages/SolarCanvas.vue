@@ -13,8 +13,8 @@
 </template>
 
 <script setup>
-import {onMounted, onBeforeUnmount, useTemplateRef} from 'vue'
-import {initEngine} from "@/three/engine.js";
+import {onMounted, onBeforeUnmount, useTemplateRef, onActivated, onDeactivated} from 'vue'
+import {initEngine, pauseEngine, resumeEngine} from "@/three/engine.js";
 import {useHoverStore} from "@/stores/hover.js";
 import {getNDCCoordinate, setLeaveCoordinate} from "@/three/lib/pointer.js";
 import SolarLabel from "@/components/SolarLabel.vue";
@@ -65,6 +65,16 @@ let canvas = null
  * @type {Boolean} 标识当前组件是否被卸载.本标量用于防止在组件卸载后继续执行异步操作
  * */
 let isUnmounted = false
+
+/**
+ * @type {Boolean} 标识引擎构建是否完成(即onMounted()中调用initEngine()是否已经resolve)
+ * */
+let isEngineReady = false
+
+/**
+ * @type {Boolean} 标识当前组件是否处于激活状态(被KeepAlive显示中)
+ * */
+let isActive = false
 
 /**
  * @type {Number} 鼠标点击时的水平坐标
@@ -170,6 +180,29 @@ function onPointerUp(event) {
 }
 
 /**
+ * 本函数按
+ *      - 引擎就绪
+ *      - 组件激活
+ * 这2个条件,同步引擎的运行/暂停:
+ *      - 引擎就绪 且 组件激活: 恢复引擎(启动动画循环)
+ *      - 引擎就绪 且 组件未激活: 暂停引擎(停止动画循环,保留场景)
+ *      - 引擎未就绪: 不操作(等待initEngine()执行完毕后,由onMounted()再次调用本函数)
+ * Tips: 由于resumeEngine()和pauseEngine()均幂等,故本函数可被多个生命周期钩子函数安全重复调用
+ * */
+function syncEngineRunning() {
+    if (!isEngineReady) {
+        return
+    }
+
+    if (isActive) {
+        resumeEngine()
+        return
+    }
+
+    pauseEngine()
+}
+
+/**
  * 本组件挂载完成后:
  *      1. 初始化3D场景(引擎)
  *      2. 若await期间组件已被卸载,则销毁引擎实例并返回
@@ -191,10 +224,35 @@ onMounted(async () => {
     canvas.addEventListener('pointerleave', onPointerLeave)
     canvas.addEventListener('pointerdown', onPointerDown)
     canvas.addEventListener('pointerup', onPointerUp)
+
+    // 引擎初始化完成 按当前激活状态决定是否启动动画循环
+    isEngineReady = true
+    syncEngineRunning()
+})
+
+/**
+ * 本组件激活时:
+ *      1. 修改激活状态标识
+ *      2. 按当前激活状态决定是否启动动画循环
+ * */
+onActivated(() => {
+    isActive = true
+    syncEngineRunning()
+})
+
+/**
+ * 本组件停用时:
+ *      1. 修改激活状态标识
+ *      2. 按当前激活状态决定是否暂停动画循环
+ * */
+onDeactivated(() => {
+    isActive = false
+    syncEngineRunning()
 })
 
 onBeforeUnmount(() => {
     isUnmounted = true
+    isActive = false
 
     if (canvas !== null) {
         canvas.removeEventListener('pointermove', onPointerMove)

@@ -52,14 +52,12 @@ let focusStore = null
  *      6.1 初始化后期处理管线
  *      6.2 为太阳设置辉光图层
  *      6.3 为外行星设置补光图层
- * 7. 监听视口大小变化
- * 8. 启动动画循环
  * @param {HTMLDivElement} container 要挂载canvas的容器DOM
  * @param {import('@/stores/hover.js').HoverStore} hoverStoreInstance 定义悬停状态机属性和行为的存储实例
  * @param {import('@/stores/focus.js').FocuseStore} focusStoreInstance 定义聚焦状态机属性和行为的存储实例
  * @return {{canvas: HTMLCanvasElement, dispose: Function}} 渲染器使用的canvas DOM元素和销毁函数
  * */
-export async function initEngine(container, hoverStoreInstance, focusStoreInstance) {
+async function initEngine(container, hoverStoreInstance, focusStoreInstance) {
     hoverStore = hoverStoreInstance
     focusStore = focusStoreInstance
 
@@ -101,12 +99,6 @@ export async function initEngine(container, hoverStoreInstance, focusStoreInstan
         markAsBloomObject(sunAxis)
         // 6.3 为外行星设置补光图层
         markOuterPlanetsLayer()
-
-        // 7. 监听视口大小变化
-        window.addEventListener('resize', onWindowResize)
-
-        // 8. 启动动画循环
-        startAnimation()
     } catch (err) {
         // 清理资源
         dispose()
@@ -124,6 +116,38 @@ export async function initEngine(container, hoverStoreInstance, focusStoreInstan
     return {
         canvas: renderer.domElement,
         dispose,
+    }
+}
+
+/**
+ * 本函数用于恢复/首次启动引擎时:
+ * 1. 同步一次视口尺寸(防止暂停期间视口发生变化导致画面拉伸)
+ * 2. 注册视口大小变化监听
+ * 3. 启动动画循环
+ * Tips: 若在动画循环期间调用本函数,则本函数会直接返回(幂等性)
+ * */
+function resumeEngine() {
+    if (rafId !== null) {
+        return
+    }
+
+    onWindowResize()
+    window.addEventListener('resize', onWindowResize)
+    startAnimation()
+}
+
+/**
+ * 本函数用于暂停引擎运行(离开canvas页面时调用):
+ * 1. 注销视口大小变化监听
+ * 2. 停止动画循环
+ * Tips: 本函数仅停止动画循环,不销毁场景/相机/轨道控制器/渲染器,以便resumeEngine()被调用时,能从原状态无缝继续
+ * */
+function pauseEngine() {
+    window.removeEventListener('resize', onWindowResize)
+
+    if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+        rafId = null
     }
 }
 
@@ -175,46 +199,37 @@ function startAnimation() {
 
     // 8. 渲染辉光效果
     renderBloomFrame()
-
-    console.log(camera.position)
 }
 
 /**
- * 本函数用于在卸载3D场景时:
- * 1. 取消对视口大小的监听
- * 2. 停止动画循环
- * 3. 销毁轨道控制器
- * 4. 销毁后期处理管线
- * 5. 销毁渲染器
- * 6. 复位悬停状态机的引用
- * 7. 复位悬停状态机的引用
+ * 本函数用于在卸载3D场景时(仅在组件真正卸载时调用):
+ * 1. 暂停引擎(注销视口监听 + 停止动画循环)
+ * 2. 销毁轨道控制器
+ * 3. 销毁后期处理管线
+ * 4. 销毁渲染器
+ * 5. 复位悬停状态机的引用
+ * 6. 复位聚焦状态机的引用
  * */
 function dispose () {
-    // 1. 取消对视口大小的监听
-    window.removeEventListener('resize', onWindowResize)
+    // 1. 暂停引擎(注销视口监听和停止动画循环)
+    pauseEngine()
 
-    // 2. 停止动画循环
-    if (rafId !== null) {
-        cancelAnimationFrame(rafId)
-        rafId = null
-    }
-
-    // 3. 销毁轨道控制器
+    // 2. 销毁轨道控制器
     if (controls !== null) {
         controls.dispose()
         controls = null
     }
 
-    // 4. 销毁后期处理管线
+    // 3. 销毁后期处理管线
     disposeBloom()
 
-    // 5. 销毁渲染器
+    // 4. 销毁渲染器
     renderer.dispose()
 
-    // 6. 复位悬停状态机的引用
+    // 5. 复位悬停状态机的引用
     hoverStore = null
 
-    // 7. 复位聚焦状态机的引用
+    // 6. 复位聚焦状态机的引用
     focusStore = null
 }
 
@@ -231,4 +246,10 @@ function onWindowResize () {
     resizeCamera(width, height)
     resizeRenderer(width, height)
     resizeBloom(width, height)
+}
+
+export {
+    initEngine,
+    resumeEngine,
+    pauseEngine,
 }

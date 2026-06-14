@@ -1,7 +1,7 @@
 import {useFocusStore} from "@/stores/focus.js";
 import {sunAxis} from "@/three/sun.js";
 import {planets} from "@/three/planet/index.js";
-import {onBeforeUnmount, onMounted} from "vue";
+import {onActivated, onDeactivated} from "vue";
 
 /**
  * @type {Array<import('three').Object3D>} 天体循环聚焦顺序列表
@@ -65,6 +65,6 @@ function onKeydown(event) {
  * - ESC: 退出聚焦
  * */
 export function useKeyboardFocusNav() {
-    onMounted(() => window.addEventListener('keydown', onKeydown))
-    onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+    onActivated(() => window.addEventListener('keydown', onKeydown))
+    onDeactivated(() => window.removeEventListener('keydown', onKeydown))
 }

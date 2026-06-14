@@ -1,6 +1,10 @@
 <template>
     <div class="app">
-        <RouterView></RouterView>
+        <RouterView v-slot="{Component}">
+            <KeepAlive include="SolarCanvas">
+                <Component :is="Component"></Component>
+            </KeepAlive>
+        </RouterView>
     </div>
 </template>
 
