@@ -66,7 +66,6 @@ const focusStore = useFocusStore()
 .solar-panel .content-warp {
     width: 100%;
     height: 100%;
-    font-family: "Source Han Serif CN", serif;
     color: #FFFFFF;
 }
 </style>

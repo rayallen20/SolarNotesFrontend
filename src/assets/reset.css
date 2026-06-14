@@ -105,3 +105,11 @@ button {
     border: none;
     outline: none;
 }
+
+/* 表单控件默认不继承字体,显式让表单控件加入继承链,统一走body的默认字体 */
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}

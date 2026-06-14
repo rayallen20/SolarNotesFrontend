@@ -160,7 +160,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .article-pane {
     color: #FFFFFF;
-    font-family: "Source Han Serif CN", serif;
     font-style: normal;
     position: relative;
     overflow: hidden;
@@ -185,7 +184,6 @@ onBeforeUnmount(() => {
 .article-pane .content {
     margin: 0 38px 38px 39px;
     font-size: 18px;
-    font-weight: 400;
     line-height: 38px;
     letter-spacing: 1px;
 }
@@ -242,7 +240,6 @@ onBeforeUnmount(() => {
     border: 1px solid #2CFBFF;
     background: linear-gradient(270deg, rgba(44, 251, 255, 0.30) 0%, rgba(44, 251, 255, 0.10) 100%);
     color: #2CFBFF;
-    font-family: "Source Han Serif CN", serif;
     font-size: 20px;
     font-style: normal;
     font-weight: 700;
@@ -297,7 +294,6 @@ onBeforeUnmount(() => {
     color: #2CFBFF;
     border-radius: 0 0 20px 20px;
     background: linear-gradient(0deg, rgba(44, 251, 255, 0.20) 0%, rgba(44, 251, 255, 0) 100%);
-    font-family: "Source Han Serif CN", serif;
     font-size: 30px;
     font-style: normal;
     font-weight: 700;
@@ -365,7 +361,6 @@ onBeforeUnmount(() => {
     color: #2CFBFF;
     border-radius: 0 0 20px 20px;
     background: linear-gradient(0deg, rgba(44, 251, 255, 0.20) 0%, rgba(44, 251, 255, 0) 100%);
-    font-family: "Source Han Serif CN", serif;
     font-size: 30px;
     font-style: normal;
     font-weight: 700;

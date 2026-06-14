@@ -91,7 +91,6 @@ watch(() => articleStore.pendingRevealId, async (revealId) => {
 .catalogue-tree h3 {
     margin-bottom: 28px;
     color: #2CFBFF;
-    font-family: "Source Han Serif CN", serif;
     font-size: 38px;
     font-style: normal;
     font-weight: 900;
@@ -147,7 +146,6 @@ watch(() => articleStore.pendingRevealId, async (revealId) => {
 
 .primary-row .literal {
     color: #FFFFFF;
-    font-family: "Source Han Serif CN", serif;
     font-size: 24px;
     font-style: normal;
     font-weight: 700;
@@ -194,7 +192,6 @@ watch(() => articleStore.pendingRevealId, async (revealId) => {
     overflow: hidden;
     color: #FFFFFF;
     text-overflow: ellipsis;
-    font-family: "Source Han Serif CN", serif;
     font-size: 18px;
     font-style: normal;
     font-weight: 500;

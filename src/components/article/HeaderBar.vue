@@ -68,7 +68,6 @@ const articleStore = useArticleStore()
     font-family: "PingFang SC", serif;
     font-size: 18px;
     font-style: normal;
-    font-weight: 400;
     letter-spacing: 1px;
 }
 
@@ -77,7 +76,6 @@ const articleStore = useArticleStore()
     display: flex;
     align-items: center;
     color: #FFFFFF;
-    font-family: "Source Han Serif CN", serif;
     font-size: 40px;
     font-style: normal;
     font-weight: 900;

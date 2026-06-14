@@ -52,7 +52,6 @@ const focusStore = useFocusStore()
     overflow: hidden;
     font-size: 18px;
     font-style: normal;
-    font-weight: 400;
     line-height: 32px;
     letter-spacing: 1px;
 }
