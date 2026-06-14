@@ -145,13 +145,6 @@ watch(() => articleStore.pendingRevealId, async (revealId) => {
     column-gap: 10px;
 }
 
-.primary-row .left-trapezoid {
-    width: 6px;
-    height: 24px;
-    background: #20C6D8;
-    clip-path: polygon(0px 0px, 6px 5px, 6px 19px, 0px 24px);
-}
-
 .primary-row .literal {
     color: #FFFFFF;
     font-family: "Source Han Serif CN", serif;

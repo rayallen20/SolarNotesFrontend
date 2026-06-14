@@ -4,7 +4,7 @@
             <!-- 激活态: 梯形 + 标题 + md文档正文 -->
             <template v-if="articleStore.renderPhase === RenderPhase.leaf">
                 <h2 class="title">
-                    <div class="left-trapezoid"></div>
+                    <Trapezoid :height="40" :inset="7"></Trapezoid>
                     <div class="literal">{{articleStore.activeNode.name}}</div>
                 </h2>
 
@@ -59,6 +59,7 @@ import {computed, nextTick, onBeforeUnmount, onMounted, useTemplateRef, watch} f
 import {RenderPhase} from "@/lib/enum.js";
 import SimpleBar from "simplebar";
 import {useArticleStore} from "@/stores/article.js";
+import Trapezoid from "@/components/common/Trapezoid.vue";
 
 defineOptions({
     name: 'ArticlePane',
@@ -216,13 +217,6 @@ onBeforeUnmount(() => {
 .article-active .title {
     display: flex;
     column-gap: 20px;
-}
-
-.article-active .title .left-trapezoid {
-    width: 8px;
-    height: 40px;
-    background: #20C6D8;
-    clip-path: polygon(0px 0px, 8px 7px, 8px 33px, 0px 40px);
 }
 
 .article-active .title .literal {

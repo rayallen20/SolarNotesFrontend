@@ -18,7 +18,7 @@
             class="row primary-row"
             @click="onRowClick"
         >
-            <div class="left-trapezoid"></div>
+            <Trapezoid :width="6" :height="24"></Trapezoid>
             <span class="literal">{{node.name}}</span>
         </div>
 
@@ -63,6 +63,7 @@ import {computed, useTemplateRef} from "vue";
 import {CatalogueNodeType} from "@/lib/enum.js";
 import {useArticleStore} from "@/stores/article.js";
 import {useCollapseTransition} from "@/composables/useCollapseTransition.js";
+import Trapezoid from "@/components/common/Trapezoid.vue";
 
 /**
  * @typedef {import('@/data/treeData.js').CatalogueNode} CatalogueNode 目录树节点
@@ -123,9 +124,8 @@ const {isAnimating} = useCollapseTransition(childrenRef, () => isCollapsed.value
  * 本函数用于处理行点击:
  *      - 非叶节点的折叠态切换
  *      - 选中当前节点
- * @param {MouseEvent} event 点击事件对象
  * */
-function onRowClick(event) {
+function onRowClick() {
     if (props.node.type === CatalogueNodeType.folder && props.depth !== 0) {
         articleStore.toggleCollapsed(props.node.id)
     }
