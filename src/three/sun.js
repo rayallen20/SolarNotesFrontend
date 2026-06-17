@@ -9,6 +9,8 @@ import {bodyType} from "@/three/enum.js";
 /**
  * 本常量用于定义太阳相关配置
  * @type {Object}
+ * @type {Number} id 太阳的天体id
+ * @property {String} name 太阳天体名称(用于标识后端API中的数据)
  * @property {String} groupName 太阳组名称
  * @property {String} axisName 太阳自转轴名称
  * @property {String} path 太阳模型的路径
@@ -74,6 +76,7 @@ import {bodyType} from "@/three/enum.js";
  * @property {String} label.intro 标签显示的介绍文字
  * */
 const config = {
+    id: 1,
     groupName: 'sunRoot',
     axisName: 'sunAxis',
     path: '/assets/sun/scene.gltf',

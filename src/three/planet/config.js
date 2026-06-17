@@ -41,7 +41,7 @@ import {bodyType, planetZone} from "@/three/enum.js";
  * */
 export const config = [
     {
-        id: 1,
+        id: 2,
         name: 'Mercury',
         axisName: 'mercuryAxis',
         groupName: 'mercuryRoot',
@@ -66,7 +66,7 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 2,
+        id: 3,
         name: 'Venus',
         axisName: 'venusAxis',
         groupName: 'venusRoot',
@@ -91,7 +91,7 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 3,
+        id: 4,
         name: 'Earth',
         axisName: 'earthAxis',
         groupName: 'earthRoot',
@@ -116,7 +116,7 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 4,
+        id: 5,
         name: 'Mars',
         axisName: 'marsAxis',
         groupName: 'marsRoot',
@@ -141,7 +141,7 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 5,
+        id: 6,
         name: 'Jupiter',
         axisName: 'jupiterAxis',
         groupName: 'jupiterRoot',
@@ -167,7 +167,7 @@ export const config = [
         planetZone: planetZone.outer,
     },
     {
-        id: 6,
+        id: 7,
         name: 'Saturn',
         axisName: 'saturnAxis',
         groupName: 'saturnRoot',
@@ -192,7 +192,7 @@ export const config = [
         planetZone: planetZone.outer,
     },
     {
-        id: 7,
+        id: 8,
         name: 'Uranus',
         axisName: 'uranusAxis',
         groupName: 'uranusRoot',
@@ -217,7 +217,7 @@ export const config = [
         planetZone: planetZone.outer,
     },
     {
-        id: 8,
+        id: 9,
         name: 'Neptune',
         axisName: 'neptuneAxis',
         groupName: 'neptuneRoot',
