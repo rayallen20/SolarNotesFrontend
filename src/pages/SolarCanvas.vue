@@ -9,11 +9,12 @@
         <SolarLabel></SolarLabel>
         <SolarPanel></SolarPanel>
         <KeyboardHint></KeyboardHint>
+        <SceneErrorHint :visible="hasInitError" @close="hasInitError = false"></SceneErrorHint>
     </div>
 </template>
 
 <script setup>
-import {onMounted, onBeforeUnmount, useTemplateRef, onActivated, onDeactivated} from 'vue'
+import {onMounted, onBeforeUnmount, useTemplateRef, onActivated, onDeactivated, ref} from 'vue'
 import {initEngine, pauseEngine, resumeEngine} from "@/three/engine.js";
 import {useHoverStore} from "@/stores/hover.js";
 import {getNDCCoordinate, setLeaveCoordinate} from "@/three/lib/pointer.js";
@@ -24,6 +25,9 @@ import {useFocusStore} from "@/stores/focus.js";
 import SolarPanel from "@/components/SolarPanel.vue";
 import {useKeyboardFocusNav} from "@/composables/useKeyboardFocusNav.js";
 import KeyboardHint from "@/components/KeyboardHint.vue";
+import {getList} from "@/api/planet.js";
+import {applyBodyMeta} from "@/three/applyBodyMeta.js";
+import SceneErrorHint from "@/components/SceneErrorHint.vue";
 
 defineOptions({
     name: 'SolarCanvas',
@@ -75,6 +79,11 @@ let isEngineReady = false
  * @type {Boolean} 标识当前组件是否处于激活状态(被KeepAlive显示中)
  * */
 let isActive = false
+
+/**
+ * @type {import('vue').Ref<Boolean>} 标识组件首次初始化是否失败(用于驱动错误提示组件的显隐)
+ * */
+const hasInitError = ref(false)
 
 /**
  * @type {Number} 鼠标点击时的水平坐标
@@ -204,40 +213,69 @@ function syncEngineRunning() {
 
 /**
  * 本组件挂载完成后:
- *      1. 初始化3D场景(引擎)
- *      2. 若await期间组件已被卸载,则销毁引擎实例并返回
- *      3. 保存引擎返回的canvas DOM元素和销毁函数的引用
- *      4. 在canvas上绑定pointer相关事件
+ *      1. 请求后端API
+ *      2. 构建3D场景(若await期间组件已被卸载,则销毁引擎实例并返回)
+ *      3. 将API中的数据写入场景中
+ *      4. 绑定canvas的pointer事件
+ *      5. 引擎初始化完成,按当前激活状态决定是否启动动画循环
  * */
 onMounted(async () => {
-    const engine = await initEngine(containerRef.value, hoverStore, focusStore)
-    if (isUnmounted) {
-        engine.dispose()
-        return
+    try {
+        // step1. 请求天体简介API
+        const {planets} = await getList()
+
+        // step2. 构建3D场景
+        const engine = await initEngine(containerRef.value, hoverStore, focusStore)
+        if (isUnmounted) {
+            engine.dispose()
+            return
+        }
+
+        dispose = engine.dispose
+        canvas = engine.canvas
+
+        // step3. 将简介以name为匹配键,写入场景中
+        applyBodyMeta(planets)
+
+        // step4. 绑定canvas的pointer事件
+        canvas.addEventListener('pointermove', onPointerMove)
+        canvas.addEventListener('pointerenter', onPointerEnter)
+        canvas.addEventListener('pointerleave', onPointerLeave)
+        canvas.addEventListener('pointerdown', onPointerDown)
+        canvas.addEventListener('pointerup', onPointerUp)
+
+        // step5. 引擎初始化完成,按当前激活状态决定是否启动动画循环
+        isEngineReady = true
+        syncEngineRunning()
+    } catch (err) {
+        // 首次初始化失败: 显示错误提示组件,引擎不启动
+        console.error('场景初始化失败:', err)
+        hasInitError.value = true
     }
-
-    dispose = engine.dispose
-    canvas = engine.canvas
-
-    canvas.addEventListener('pointermove', onPointerMove)
-    canvas.addEventListener('pointerenter', onPointerEnter)
-    canvas.addEventListener('pointerleave', onPointerLeave)
-    canvas.addEventListener('pointerdown', onPointerDown)
-    canvas.addEventListener('pointerup', onPointerUp)
-
-    // 引擎初始化完成 按当前激活状态决定是否启动动画循环
-    isEngineReady = true
-    syncEngineRunning()
 })
+
+async function refreshBodyMeta() {
+    try {
+        const {planets} = await getList()
+        applyBodyMeta(planets)
+    } catch (err) {
+        console.error('刷新天体简介失败,保留现有内容: ', err)
+    }
+}
 
 /**
  * 本组件激活时:
  *      1. 修改激活状态标识
  *      2. 按当前激活状态决定是否启动动画循环
+ *      3. 重新请求天体简介API(首次激活时由onMounted()生命周期函数负责请求,不在此处请求)
  * */
 onActivated(() => {
     isActive = true
     syncEngineRunning()
+
+    if (isEngineReady) {
+        refreshBodyMeta()
+    }
 })
 
 /**

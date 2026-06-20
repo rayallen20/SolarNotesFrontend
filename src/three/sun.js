@@ -9,7 +9,6 @@ import {bodyType} from "@/three/enum.js";
 /**
  * 本常量用于定义太阳相关配置
  * @type {Object}
- * @type {Number} id 太阳的天体id
  * @property {String} name 太阳天体名称(用于标识后端API中的数据)
  * @property {String} groupName 太阳组名称
  * @property {String} axisName 太阳自转轴名称
@@ -72,11 +71,9 @@ import {bodyType} from "@/three/enum.js";
  * @property {import('three').Vector3} position 太阳位置
  * @property {Object} label 太阳标签相关配置
  * @property {bodyType} label.bodyType 标签的天体类型,用于区分不同类型天体的标签样式
- * @property {String} label.name 标签显示的名称
- * @property {String} label.intro 标签显示的介绍文字
  * */
-const config = {
-    id: 1,
+export const config = {
+    name: 'Sun',
     groupName: 'sunRoot',
     axisName: 'sunAxis',
     path: '/assets/sun/scene.gltf',
@@ -139,8 +136,6 @@ const config = {
     position: new THREE.Vector3(0, 0, 0),
     label: {
         bodyType: bodyType.sun,
-        title: '太阳',
-        intro: '一段太阳的介绍文字'
     }
 }
 
@@ -150,8 +145,6 @@ const config = {
 export const sunAxis = new THREE.Group()
 sunAxis.name = config.axisName
 sunAxis.userData.bodyType = config.label.bodyType
-sunAxis.userData.title = config.label.title
-sunAxis.userData.intro = config.label.intro
 sunAxis.userData.hoverRadius = config.hover.radius
 
 /**

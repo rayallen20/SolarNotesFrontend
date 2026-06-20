@@ -92,12 +92,12 @@ function dismiss() {
     gap: 12px;
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(10, 22, 34, 0.72);
+    background: rgba(10, 22, 34, 0.25);
     border: 1px solid rgba(32, 198, 216, 0.35);
     color: #CFE8FF;
     font-size: 13px;
     line-height: 1;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
     user-select: none;
 }
 

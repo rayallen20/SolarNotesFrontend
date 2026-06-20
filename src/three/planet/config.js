@@ -11,8 +11,6 @@ import {bodyType, planetZone} from "@/three/enum.js";
 /**
  * @typedef {Object} LabelConfig 行星标签配置项
  * @property {bodyType} bodyType 天体类型
- * @property {String} title 天体对应的label标题
- * @property {String} intro 天体对应的label介绍
  * */
 
 /**
@@ -22,7 +20,6 @@ import {bodyType, planetZone} from "@/three/enum.js";
 
 /**
  * @typedef {Object} PlanetConfig 行星配置项
- * @property {Number} id 行星id
  * @property {String} name 天体名称(用于程序内部标识)
  * @property {String} axisName 轨道面倾角层Group的名称
  * @property {String} groupName 行星公转层Group的名称
@@ -41,7 +38,6 @@ import {bodyType, planetZone} from "@/three/enum.js";
  * */
 export const config = [
     {
-        id: 2,
         name: 'Mercury',
         axisName: 'mercuryAxis',
         groupName: 'mercuryRoot',
@@ -57,8 +53,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '水星',
-            intro: '一段水星的介绍文字',
         },
         hover: {
             radius: 0.5,
@@ -66,7 +60,6 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 3,
         name: 'Venus',
         axisName: 'venusAxis',
         groupName: 'venusRoot',
@@ -82,8 +75,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '金星',
-            intro: '一段金星的介绍文字',
         },
         hover: {
             radius: 1.25,
@@ -91,7 +82,6 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 4,
         name: 'Earth',
         axisName: 'earthAxis',
         groupName: 'earthRoot',
@@ -107,8 +97,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '地球',
-            intro: '一段地球的介绍文字',
         },
         hover: {
             radius: 1.3,
@@ -116,7 +104,6 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 5,
         name: 'Mars',
         axisName: 'marsAxis',
         groupName: 'marsRoot',
@@ -132,8 +119,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '火星',
-            intro: '一段火星的介绍文字',
         },
         hover: {
             radius: 0.7,
@@ -141,7 +126,6 @@ export const config = [
         planetZone: planetZone.inner,
     },
     {
-        id: 6,
         name: 'Jupiter',
         axisName: 'jupiterAxis',
         groupName: 'jupiterRoot',
@@ -157,8 +141,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '木星',
-            intro: '一段木星的介绍文字',
         },
         hover: {
             // Tips: 含行星带则radius应为14.65
@@ -167,7 +149,6 @@ export const config = [
         planetZone: planetZone.outer,
     },
     {
-        id: 7,
         name: 'Saturn',
         axisName: 'saturnAxis',
         groupName: 'saturnRoot',
@@ -183,8 +164,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '土星',
-            intro: '一段土星的介绍文字',
         },
         hover: {
             radius: 12.35,
@@ -192,7 +171,6 @@ export const config = [
         planetZone: planetZone.outer,
     },
     {
-        id: 8,
         name: 'Uranus',
         axisName: 'uranusAxis',
         groupName: 'uranusRoot',
@@ -208,8 +186,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '天王星',
-            intro: '一段天王星的介绍文字',
         },
         hover: {
             radius: 5.25,
@@ -217,7 +193,6 @@ export const config = [
         planetZone: planetZone.outer,
     },
     {
-        id: 9,
         name: 'Neptune',
         axisName: 'neptuneAxis',
         groupName: 'neptuneRoot',
@@ -233,8 +208,6 @@ export const config = [
         },
         label: {
             bodyType: bodyType.planet,
-            title: '海王星',
-            intro: '一段海王星的介绍文字',
         },
         hover: {
             radius: 5.1,

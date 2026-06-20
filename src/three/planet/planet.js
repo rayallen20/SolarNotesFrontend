@@ -47,8 +47,6 @@ function createPlanet(config) {
 
     // 挂载交互所需的userData
     root.userData.bodyType = config.label.bodyType
-    root.userData.title = config.label.title
-    root.userData.intro = config.label.intro
     root.userData.hoverRadius = config.hover.radius
 
     return {
