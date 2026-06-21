@@ -69,6 +69,18 @@ const FocusedPane = Object.freeze({
     article: 'article',
 })
 
+/**
+ * @typedef {Object} BookListStatus 本枚举项用于标识获取书籍列表API的请求状态
+ * @property {String} loading 正在请求
+ * @property {String} success 请求成功(但列表可能为空,表示该天体下暂无书籍)
+ * @property {String} failed 请求失败
+ * */
+const BookListStatus = Object.freeze({
+    loading: 'loading',
+    success: 'success',
+    failed: 'failed',
+})
+
 export {
     ActionType,
     HoverPhase,
@@ -76,4 +88,5 @@ export {
     CatalogueNodeType,
     RenderPhase,
     FocusedPane,
+    BookListStatus,
 }

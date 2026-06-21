@@ -28,6 +28,7 @@ import KeyboardHint from "@/components/KeyboardHint.vue";
 import {getList} from "@/api/planet.js";
 import {applyBodyMeta} from "@/three/applyBodyMeta.js";
 import SceneErrorHint from "@/components/SceneErrorHint.vue";
+import {useBookListSync} from "@/composables/useBookListSync.js";
 
 defineOptions({
     name: 'SolarCanvas',
@@ -288,6 +289,13 @@ onDeactivated(() => {
     syncEngineRunning()
 })
 
+/**
+ * 本组件卸载前:
+ *      1. 置卸载标识为true(使onMounted()中,await之后的逻辑可以感知到组件已卸载,从而销毁引擎而非继续构建场景)
+ *      2. 置激活状态标识为false,表示该组件不再处于激活状态(被KeepAlive显示中)
+ *      3. 若canvas已构建,则移除该元素上绑定的所有事件监听器(防止内存泄漏和潜在的错误)
+ *      4. 若引擎已构建,则调用dispose()销毁引擎实例,释放3D场景资源
+ * */
 onBeforeUnmount(() => {
     isUnmounted = true
     isActive = false
@@ -305,7 +313,10 @@ onBeforeUnmount(() => {
     }
 })
 
+// 启用键盘聚焦导航: ←/→切换聚焦目标;ESC退出聚焦(内部自挂载/卸载window键盘监听)
 useKeyboardFocusNav()
+// 启用书籍列表同步: 被聚焦天体变化时,重新请求书籍列表API,写入bookStore,供panel渲染
+useBookListSync()
 </script>
 
 <style scoped>
