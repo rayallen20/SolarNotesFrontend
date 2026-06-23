@@ -8,9 +8,22 @@
                     <div class="literal">{{catalogueStore.activeNode.name}}</div>
                 </h2>
 
-                <div class="article-content markdown-body" v-html="catalogueStore.articleHtml"></div>
+                <!-- 加载中 -->
+                <div v-if="articleStore.status === RequestStatus.loading" class="article-content article-loading">
+                    <span>加载中...</span>
+                </div>
 
-                <span class="created-at">{{catalogueStore.activeNode.createdAt}}</span>
+                <!-- 加载失败: 点击重试 -->
+                <div v-if="articleStore.status === RequestStatus.failed" class="article-content article-failed">
+                    <span>加载失败</span>
+                    <button type="button" class="retry" @click="articleStore.requestReload()">重试</button>
+                </div>
+
+                <!-- 加载成功: 渲染正文 + 创建时间 -->
+                <template v-if="articleStore.status === RequestStatus.success">
+                    <div class="article-content markdown-body" v-html="articleStore.articleHtml"></div>
+                    <span class="created-at">{{articleStore.article.createdAt}}</span>
+                </template>
             </template>
 
             <!-- 非激活态: 标题 + 简介 -->
@@ -56,10 +69,11 @@
 
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, useTemplateRef, watch} from "vue";
-import {RenderPhase} from "@/lib/enum.js";
+import {RenderPhase, RequestStatus} from "@/lib/enum.js";
 import SimpleBar from "simplebar";
 import {useCatalogueStore} from "@/stores/reader/catalogue.js";
 import Trapezoid from "@/components/common/Trapezoid.vue";
+import {useArticleStore} from "@/stores/reader/article.js";
 
 defineOptions({
     name: 'ArticlePane',
@@ -69,6 +83,11 @@ defineOptions({
  * @type {import('@/stores/reader/catalogue.js').CatalogueStore} 目录状态机的实例
  * */
 const catalogueStore = useCatalogueStore()
+
+/**
+ * @type {import('@/stores/reader/article.js').ArticleStore} 文章状态机实例
+ * */
+const articleStore = useArticleStore()
 
 /**
  * @type {import('vue').ComputedRef<String>} 文章区当前状态对应的CSS类名
@@ -138,7 +157,10 @@ onMounted(() => {
 // Tips: 从store中读到的Proxy对象会自动解包,因此在组件中拿到的就是一个普通对象,无法被watch
 // Tips: 因此要使用getter()函数的形式,才能被watch()函数监听
 watch(
-    () => catalogueStore.activeNode,
+    [
+        () => catalogueStore.activeNode,
+        () => articleStore.articleHtml,
+    ],
     async () => {
         // Tips: watch默认flush:'pre',跑在DOM更新之前,此刻旧元素仍在DOM中,可干净卸载
         unmountOverflowScrollbars()
@@ -388,5 +410,33 @@ onBeforeUnmount(() => {
 
 .article-content {
     margin: 0 38px 38px 39px;
+}
+
+/* 文章正文加载态/失败态: 居中占位 */
+.article-loading, .article-failed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    row-gap: 16px;
+    /* 占位高度,避免贴顶 */
+    min-height: 240px;
+    color: #CFE8FF;
+}
+
+.article-failed .retry {
+    padding: 6px 20px;
+    font-size: 16px;
+    color: #CFE8FF;
+    background: transparent;
+    border: 1px solid rgba(32, 198, 216, 0.35);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.article-failed .retry:hover {
+    color: #51EEFF;
+    border-color: #51EEFF;
 }
 </style>

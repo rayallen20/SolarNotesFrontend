@@ -1,8 +1,7 @@
 import {defineStore} from "pinia";
-import {buildNodeIndex, dfsFindFirstLeafNode, initCollapsedIdSet, getLeafContent} from "@/lib/treeQuery.js";
+import {buildNodeIndex, dfsFindFirstLeafNode, initCollapsedIdSet} from "@/lib/treeQuery.js";
 import {computed, ref, shallowRef} from "vue";
 import {CatalogueNodeType, FocusedPane, RenderPhase, RequestStatus} from "@/lib/enum.js";
-import {renderMarkdownToHtml} from "@/lib/markdown.js";
 
 /**
  * @typedef {import('@/api/catalogue.js').CatalogueNode} CatalogueNode
@@ -87,7 +86,24 @@ export const useCatalogueStore = defineStore('catalogue', () => {
      * @type {import('vue').ComputedRef<String>} 渲染状态(由当前选中节点是否为叶子节点决定)
      * */
     const renderPhase = computed(() => {
+        if (activeNode.value === null) {
+            return RenderPhase.nonLeaf
+        }
+
         return activeNode.value.type === CatalogueNodeType.file ? RenderPhase.leaf : RenderPhase.nonLeaf
+    })
+
+    /**
+     * @type {import('vue').ComputedRef<Number|null>} 当前选中的叶子节点的id(供ArticleStore使用)
+     *      - 响应未达之前或当前选中的节点为非叶节点,则本变量值为null
+     *      - 响应到达后,若当前选中节点为叶子节点则本变量值为该节点id
+     * */
+    const activeLeafId = computed(() => {
+        if (renderPhase.value !== RenderPhase.leaf) {
+            return null
+        }
+
+        return activeNodeId.value
     })
 
     /**
@@ -138,18 +154,6 @@ export const useCatalogueStore = defineStore('catalogue', () => {
      * */
     const hasMask = computed(() => {
         return renderPhase.value === RenderPhase.leaf && focusedPane.value === FocusedPane.catalogue
-    })
-
-    /**
-     * @type {import('vue').ComputedRef<String>} 被选中叶子节点的md文档对应的安全HTML表达
-     * */
-    const articleHtml = computed(() => {
-        if (renderPhase.value === RenderPhase.leaf) {
-            const content = getLeafContent(activeNode.value)
-            return renderMarkdownToHtml(content)
-        }
-
-        return ''
     })
 
     // getters
@@ -316,10 +320,10 @@ export const useCatalogueStore = defineStore('catalogue', () => {
         collapsedIdSet, focusedPane, pendingRevealId,
 
         // computed: 当前选中节点/状态/节点路径/面包屑导航内容
-        activeNode, renderPhase, rootToActivePath, breadcrumb,
+        activeNode, renderPhase, activeLeafId, rootToActivePath, breadcrumb,
 
         // computed: 布局/md文档内容
-        isCatalogueActive, hasMask, articleHtml,
+        isCatalogueActive, hasMask,
 
         // getters
         isCollapsed,

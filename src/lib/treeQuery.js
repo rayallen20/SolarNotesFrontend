@@ -152,61 +152,9 @@ function initCollapsedIdSet(root) {
     return collapsedIdSet
 }
 
-/**
- * 本函数用于获取给定叶子节点的md文档内容
- * @param {CatalogueNode} node 要显示内容的叶子节点
- * @return {String} md文本内容
- * */
-function getLeafContent(node) {
-    if (typeof node.content === 'string' && node.content.trim() !== '') {
-        return node.content
-    }
-
-    return buildSampleMarkdown(node)
-}
-
-/**
- * 本函数为给定节点提供示例md文档内容
- * TODO: 接入axios后由请求API替代,此处仅提供长内容供静态调试使用
- * @param {CatalogueNode} node 要显示内容的叶子节点
- * @return {String} md文本内容
- * */
-function buildSampleMarkdown(node) {
-    const sectionList = []
-
-    for (let index = 1; index <= 12; index++) {
-        sectionList.push(
-            `### 示例章节 ${index}\n\n` +
-            `这是第 ${index} 段示例正文,用于验证文章区长内容下的滚动 / 排版,含段落、列表、引用和代码块。\n\n` +
-            `- 要点 A:滚动条轨道与滑块渐变\n- 要点 B:内容区与底部按钮的遮挡\n- 要点 C:专注 / 恢复切换后滚动条仍生效\n\n` +
-            `> 第 ${index} 段引用,观察块级间距。\n\n` +
-            '```js\n' + `const chapter = ${index}\nconsole.log('${node.name}', chapter)\n` + '```\n'
-        )
-    }
-
-    const sampleWideTable =
-        '| 字段 | 类型 | 必填 | 默认值 | 取值范围 | 单位 | 说明 | 示例 | 引入版本 |\n' +
-        '|---|---|---|---|---|---|---|---|---|\n' +
-        '| requestId | string | 是 | "" | UUID v4 | - | 请求唯一标识 | "550e8400-e29b-41d4-a716-446655440000" | v1.0.0 |\n' +
-        '| amountInCent | integer | 否 | 0 | 0 .. 99999999 | 分 | 金额(以分计) | 128000 | v1.2.0 |\n' +
-        '| createdAt | string | 是 | - | ISO 8601 | - | 创建时间 | "2026-06-13T08:00:00Z" | v1.0.0 |\n'
-
-    const sampleWideCode =
-        '```js\n' +
-        `const requestPayload = { requestId: '550e8400-e29b-41d4-a716-446655440000', amountInCent: 128000, createdAt: '2026-06-13T08:00:00Z', remark: '足够长的单行代码,用于在阅读态(约70%宽)下触发代码块横向溢出、验证主题色横条' }\n` +
-        '```\n'
-
-    return `## ${node.name}\n\n这是示例 Markdown 长文档,后续替换为真实正文。\n\n` +
-        `### 当前节点\n\n- 名称:${node.name}\n- 创建:${node.createdAt}\n- ID:${node.id}\n\n` +
-        `### 宽表格(临时测试,接入后端后删除)\n\n` + sampleWideTable + `\n` +
-        `### 宽代码块(临时测试,接入后端后删除)\n\n` + sampleWideCode + `\n` +
-        sectionList.join('\n\n')
-}
-
 export {
     dfsFindNodeWithPath,
     dfsFindFirstLeafNode,
     buildNodeIndex,
     initCollapsedIdSet,
-    getLeafContent,
 }

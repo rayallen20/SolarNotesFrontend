@@ -35,6 +35,7 @@ import 'highlight.js/styles/atom-one-dark.css';
 import {useCatalogueStore} from "@/stores/reader/catalogue.js";
 import {useCatalogueSync} from "@/composables/useCatalogueSync.js";
 import {RequestStatus} from "@/lib/enum.js";
+import {useArticleSync} from "@/composables/useArticleSync.js";
 
 defineOptions({
     name: 'ArticleReader',
@@ -47,6 +48,9 @@ const catalogueStore = useCatalogueStore()
 
 // 监听路由中的参数(书籍id),请求该书籍的目录并写入catalogueStore
 useCatalogueSync()
+
+// 监听选中的叶子节点id.请求该叶子节点对应的文章并写入articleStore
+useArticleSync()
 </script>
 
 <style scoped>
