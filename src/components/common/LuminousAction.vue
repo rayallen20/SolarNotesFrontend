@@ -3,7 +3,7 @@
     <div class="wrap">
         <!-- 内容层: 负责渲染按钮或链接 -->
         <button v-if="type === ActionType.button" class="luminous-button">See More</button>
-        <RouterLink v-if="type === ActionType.link" :to="{name: 'article'}" class="luminous-link">See More</RouterLink>
+        <RouterLink v-if="type === ActionType.link" :to="to" class="luminous-link">See More</RouterLink>
     </div>
 </template>
 
@@ -14,7 +14,7 @@ defineOptions({
     name: 'LuminousAction',
 })
 
-defineProps({
+const props = defineProps({
     type: {
         type: String,
         required: true,
@@ -30,8 +30,20 @@ defineProps({
             console.error('Luminous button: usage must be \'button\' or \'link\'')
             return false
         }
+    },
+    to: {
+        type: [
+            String,
+            Object,
+        ],
+        default: null,
     }
 })
+
+// link形态必须提供跳转目标(button形态不使用RouterLink,所以不需要)
+if (props.type === ActionType.link && props.to === null) {
+    console.error('LuminousAction: \'to\' is required when type is \'link\'')
+}
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 import {CatalogueNodeType} from "@/lib/enum.js";
 
 /**
- * @typedef {import('@/data/treeData.js').CatalogueNode} CatalogueNode
+ * @typedef {import('@/api/catalogue.js').CatalogueNode} CatalogueNode 目录树节点
  * */
 
 /**

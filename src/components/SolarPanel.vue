@@ -7,7 +7,12 @@
     <div class="content-warp">
         <PanelIntro></PanelIntro>
         <PanelList></PanelList>
-        <LuminousAction :type="ActionType.link"></LuminousAction>
+        <LuminousAction
+            v-if="bookStore.bookList.length > 0"
+            :type="ActionType.link"
+            :to="{name: 'article', params: {id: bookStore.bookList[0].id}}"
+        >
+        </LuminousAction>
     </div>
 </div>
 </template>
@@ -18,6 +23,7 @@ import PanelList from "@/components/panel/PanelList.vue";
 import LuminousAction from "@/components/common/LuminousAction.vue";
 import {ActionType} from "@/lib/enum.js";
 import {useFocusStore} from "@/stores/focus.js";
+import {useBookStore} from "@/stores/book.js";
 
 defineOptions({
     name: 'SolarPanel',
@@ -27,6 +33,11 @@ defineOptions({
  * @type {import('@/stores/focus.js').FocusStore} 聚焦状态机的引用
  * */
 const focusStore = useFocusStore()
+
+/**
+ * @type {import('@/stores/book.js').BookStore} 书籍列表状态机的存储实例
+ * */
+const bookStore = useBookStore()
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <template>
 <div class="panel-list">
     <!-- 加载失败: 点击重试 -->
-    <div v-if="bookStore.status === BookListStatus.failed" class="load-error">
+    <div v-if="bookStore.status === RequestStatus.failed" class="load-error">
         <span>加载失败</span>
         <button type="button" class="retry" @click="bookStore.requestReload()">重试</button>
     </div>
@@ -23,7 +23,7 @@
 <script setup>
 import Trapezoid from "@/components/common/Trapezoid.vue";
 import {useBookStore} from "@/stores/book.js";
-import {BookListStatus} from "@/lib/enum.js";
+import {RequestStatus} from "@/lib/enum.js";
 
 /**
  * @type {import('@/stores/book.js').BookStore} 书籍列表状态机store实例

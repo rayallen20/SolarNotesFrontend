@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import {ref} from "vue";
-import {BookListStatus} from "@/lib/enum.js";
+import {RequestStatus} from "@/lib/enum.js";
 
 /**
  * @typedef {Object} BookItem 后端获取书籍列表接口返回的书籍项对象
@@ -18,7 +18,7 @@ export const useBookStore = defineStore('book', () => {
     /**
      * @type {import('vue').Ref<String>} API请求状态
      * */
-    const status = ref(BookListStatus.success)
+    const status = ref(RequestStatus.success)
 
     /**
      * @type {import('vue').Ref<Number>} 重试信号 该信号自增,以便重新触发useBookListSync中的请求
@@ -31,7 +31,7 @@ export const useBookStore = defineStore('book', () => {
      * */
     function startLoading() {
         bookList.value = []
-        status.value = BookListStatus.loading
+        status.value = RequestStatus.loading
     }
 
     /**
@@ -40,7 +40,7 @@ export const useBookStore = defineStore('book', () => {
      * */
     function setBookList(list) {
         bookList.value = list
-        status.value = BookListStatus.success
+        status.value = RequestStatus.success
     }
 
     /**
@@ -48,7 +48,7 @@ export const useBookStore = defineStore('book', () => {
      * */
     function markFailed() {
         bookList.value = []
-        status.value = BookListStatus.failed
+        status.value = RequestStatus.failed
     }
 
     /**
@@ -56,7 +56,7 @@ export const useBookStore = defineStore('book', () => {
      * */
     function clear() {
         bookList.value = []
-        status.value = BookListStatus.success
+        status.value = RequestStatus.success
     }
 
     /**

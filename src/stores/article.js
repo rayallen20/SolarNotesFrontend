@@ -1,31 +1,42 @@
 import {defineStore} from "pinia";
 import {buildNodeIndex, dfsFindFirstLeafNode, getLeafContent, initCollapsedIdSet} from "@/lib/treeQuery.js";
-import {treeData} from "@/data/treeData.js";
-import {computed, ref} from "vue";
-import {CatalogueNodeType, FocusedPane, RenderPhase} from "@/lib/enum.js";
+import {computed, ref, shallowRef} from "vue";
+import {CatalogueNodeType, FocusedPane, RenderPhase, RequestStatus} from "@/lib/enum.js";
 import {renderMarkdownToHtml} from "@/lib/markdown.js";
 
 /**
- * @typedef {import('@/data/treeData.js').CatalogueNode} CatalogueNode
+ * @typedef {import('@/api/catalogue.js').CatalogueNode} CatalogueNode
  * */
-
-/**
- * @type {Map<Number, import('@/lib/treeQuery.js').NodeIndexEntry>} 树形结构中所有节点的id与节点及其路径的映射关系
- * TODO: 接入axios后此处需等到数据到达后再构建
- * */
-const nodeIndex = buildNodeIndex(treeData)
 
 export const useArticleStore = defineStore('article', () => {
     // PART1. state(仅存储不可推导的变量)
     /**
-     * @type {import('vue').Ref<Number>} 当前选中节点的id(默认选中节点为根节点)
+     * @type {import('vue').ShallowRef<CatalogueNode|null>} 当前书籍的目录树根节点
+     * Tips: 这里使用shallowRef而非Ref的原因: CatalogueNode响应到达后,不会逐字段变更,只会整体替换,因此使用shallowRef即可
      * */
-    const activeNodeId = ref(treeData.id)
+    const catalogue = shallowRef(null)
+
+    /**
+     * @type {import('vue').Ref<String>} 获取目录API的请求状态
+     * */
+    const status = ref(RequestStatus.loading)
+
+    /**
+     * @type {import('vue').Ref<Number>} 重试信号 该信号自增,以便重新触发useCatalogueSync中的请求
+     * */
+    const reloadNonce = ref(0)
+
+    /**
+     * @type {import('vue').Ref<Number|null>} 当前选中节点的id
+     *      - 响应未达之前为null
+     *      - 响应到达后默认为根节点
+     * */
+    const activeNodeId = ref(null)
 
     /**
      * @type {import('vue').Ref<Set<Number>>} 被折叠的非叶节点的id集合
      * */
-    const collapsedIdSet = ref(initCollapsedIdSet(treeData))
+    const collapsedIdSet = ref(new Set())
 
     /**
      * @type {import('vue').Ref<String>} 当前被聚焦的面板,默认聚焦目录面板(浏览态)
@@ -38,15 +49,35 @@ export const useArticleStore = defineStore('article', () => {
      * */
     const pendingRevealId = ref(null)
 
+    /**
+     * @type {Set<Number>} 本集合用于存储强制展开(跳过动画)的节点id
+     * */
+    const forceExpandedIds = new Set()
+
     // PART2. computed(当前选中节点/状态/节点路径/面包屑导航内容)
     /**
-     * @type {import('vue').ComputedRef<CatalogueNode>} 当前选中节点(默认选中根节点,由于存在默认选中的节点,所以该变量恒不为空)
+     * @type {import('vue').ComputedRef<Map<Number, import('@/lib/treeQuery.js').NodeIndexEntry>>} 树形结构中所有节点的id与节点及其路径的映射关系
+     *      - 响应未达之前为空Map
+     *      - 响应到达后为id => 路径的映射关系
+     * */
+    const nodeIndex = computed(() => {
+        if (catalogue.value === null) {
+            return new Map()
+        }
+
+        return buildNodeIndex(catalogue.value)
+    })
+
+    /**
+     * @type {import('vue').ComputedRef<CatalogueNode|null>} 当前选中节点
+     *      - 响应未达之前为null
+     *      - 响应到达后为当前选中节点(由于默认选中根节点,所以相应到达后本变量恒不为空)
      * */
     const activeNode = computed(() => {
-        const entry = nodeIndex.get(activeNodeId.value)
+        const entry = nodeIndex.value.get(activeNodeId.value)
 
         if (entry === undefined) {
-            return treeData
+            return catalogue.value
         }
 
         return entry.node
@@ -63,7 +94,7 @@ export const useArticleStore = defineStore('article', () => {
      * @type {import('vue').ComputedRef<Array<CatalogueNode>>} 从根节点开始,到当前选中节点的父节点为止的路径
      * */
     const rootToActivePath = computed(() => {
-        const entry = nodeIndex.get(activeNodeId.value)
+        const entry = nodeIndex.value.get(activeNodeId.value)
         if (entry === undefined) {
             return []
         }
@@ -75,6 +106,10 @@ export const useArticleStore = defineStore('article', () => {
      * @type {import('vue').ComputedRef<String>} 头部面包屑导航中的内容
      * */
     const breadcrumb = computed(() => {
+        if (activeNode.value === null) {
+            return ''
+        }
+
         const names = []
 
         for (const node of rootToActivePath.value) {
@@ -129,6 +164,45 @@ export const useArticleStore = defineStore('article', () => {
 
     // mutations/actions
     /**
+     * 本函数用于进入文章页/重试时调用,清空之前的目录内容并进入loading状态
+     * */
+    function startLoading() {
+        catalogue.value = null
+        activeNode.value = null
+        status.value = RequestStatus.loading
+    }
+
+    /**
+     * 本函数用于获取目录API请求成功后调用,写入目录树并复位状态机为浏览态
+     * @param {CatalogueNode} root 后端返回的目录树根节点
+     * */
+    function setCatalogue(root) {
+        catalogue.value = root
+        activeNodeId.value = root.id
+        collapsedIdSet.value = initCollapsedIdSet(root)
+        focusedPane.value = FocusedPane.catalogue
+        pendingRevealId.value = null
+        forceExpandedIds.clear()
+        status.value = RequestStatus.success
+    }
+
+    /**
+     * 本函数用于请求获取目录API失败后调用,清空目录并标记失败
+     * */
+    function markFailed() {
+        catalogue.value = null
+        activeNodeId.value = null
+        status.value = RequestStatus.failed
+    }
+
+    /**
+     * 本函数用于重试时调用,自增重试信号,触发useCatalogueSync使用当前路由中的书籍id重新请求API
+     * */
+    function requestReload() {
+        reloadNonce.value++
+    }
+
+    /**
      * 本函数用于选中节点时,按节点类型转移焦点:
      *      - 选中节点为叶子节点: 聚焦文章区
      *      - 选中节点为非叶节点: 聚焦目录区
@@ -157,11 +231,6 @@ export const useArticleStore = defineStore('article', () => {
 
         collapsedIdSet.value.add(id)
     }
-
-    /**
-     * @type {Set<Number>} 本集合用于存储强制展开(跳过动画)的节点id
-     * */
-    const forceExpandedIds = new Set()
 
     /**
      * 本函数用于展开一组非叶节点
@@ -201,7 +270,7 @@ export const useArticleStore = defineStore('article', () => {
      *      - 设置需要滚动到视口中的节点id
      * */
     function openArticle() {
-        const leaf = dfsFindFirstLeafNode(treeData, activeNodeId.value)
+        const leaf = dfsFindFirstLeafNode(catalogue.value, activeNodeId.value)
         if (leaf === null) {
             return
         }
@@ -243,7 +312,8 @@ export const useArticleStore = defineStore('article', () => {
 
     return {
         // state
-        activeNodeId, collapsedIdSet, focusedPane, pendingRevealId,
+        catalogue, status, reloadNonce, activeNodeId,
+        collapsedIdSet, focusedPane, pendingRevealId,
 
         // computed: 当前选中节点/状态/节点路径/面包屑导航内容
         activeNode, renderPhase, rootToActivePath, breadcrumb,
@@ -255,6 +325,7 @@ export const useArticleStore = defineStore('article', () => {
         isCollapsed,
 
         // mutations/actions
+        setCatalogue, startLoading, markFailed, requestReload,
         selectNode, toggleCollapsed, expandFolders, consumeForceExpanded,
         openArticle, focusCatalogue, focusArticle, clearPendingReveal,
     }

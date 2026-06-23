@@ -14,7 +14,7 @@ const routes = [
         name: 'solar',
     },
     {
-        path: '/article',
+        path: '/article/:id',
         component: () => import('@/pages/ArticleReader.vue'),
         name: 'article',
     }

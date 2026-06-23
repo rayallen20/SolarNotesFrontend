@@ -2,7 +2,7 @@
     <div ref="root" class="catalogue-tree" :class="stateClass">
         <h3>目录&nbsp;Catalogue</h3>
         <ul class="tree">
-            <TreeNode :node="treeData" :depth="0"></TreeNode>
+            <TreeNode :node="articleStore.catalogue" :depth="0"></TreeNode>
         </ul>
     </div>
 </template>
@@ -11,7 +11,6 @@
 import {computed, nextTick, onMounted, useTemplateRef, watch} from "vue";
 import SimpleBar from "simplebar";
 import TreeNode from "@/components/article/TreeNode.vue";
-import {treeData} from "@/data/treeData.js";
 import {useArticleStore} from "@/stores/article.js";
 import {ensureNodeVisible} from "@/lib/ensureNodeVisible.js";
 

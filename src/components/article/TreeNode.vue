@@ -66,7 +66,7 @@ import {useCollapseTransition} from "@/composables/useCollapseTransition.js";
 import Trapezoid from "@/components/common/Trapezoid.vue";
 
 /**
- * @typedef {import('@/data/treeData.js').CatalogueNode} CatalogueNode 目录树节点
+ * @typedef {import('@/api/catalogue.js').CatalogueNode} CatalogueNode 目录树节点
  * */
 
 defineOptions({
