@@ -2,7 +2,7 @@
     <div ref="root" class="catalogue-tree" :class="stateClass">
         <h3>目录&nbsp;Catalogue</h3>
         <ul class="tree">
-            <TreeNode :node="articleStore.catalogue" :depth="0"></TreeNode>
+            <TreeNode :node="catalogueStore.catalogue" :depth="0"></TreeNode>
         </ul>
     </div>
 </template>
@@ -11,7 +11,7 @@
 import {computed, nextTick, onMounted, useTemplateRef, watch} from "vue";
 import SimpleBar from "simplebar";
 import TreeNode from "@/components/article/TreeNode.vue";
-import {useArticleStore} from "@/stores/article.js";
+import {useCatalogueStore} from "@/stores/reader/catalogue.js";
 import {ensureNodeVisible} from "@/lib/ensureNodeVisible.js";
 
 defineOptions({
@@ -19,15 +19,15 @@ defineOptions({
 })
 
 /**
- * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机实例
+ * @type {import('@/stores/reader/catalogue.js').CatalogueStore} 目录状态机实例
  * */
-const articleStore = useArticleStore()
+const catalogueStore = useCatalogueStore()
 
 /**
  * @type {import('vue').ComputedRef<String>} 目录区当前状态对应的CSS类名
  * */
 const stateClass = computed(() => {
-    return articleStore.isCatalogueActive ? 'catalogue-active' : 'catalogue-inactive'
+    return catalogueStore.isCatalogueActive ? 'catalogue-active' : 'catalogue-inactive'
 })
 
 /**
@@ -39,20 +39,23 @@ onMounted(() => {
     new SimpleBar(rootRef.value)
 })
 
-watch(() => articleStore.pendingRevealId, async (revealId) => {
-    if (revealId === null) {
-        return
-    }
+watch(
+    () => catalogueStore.pendingRevealId,
+    async (revealId) => {
+        if (revealId === null) {
+            return
+        }
 
-    await nextTick()
-    const options = {
-        behavior: 'smooth',
-        block: 'center',
-    }
-    ensureNodeVisible(rootRef.value, revealId, options)
+        await nextTick()
+        const options = {
+            behavior: 'smooth',
+            block: 'center',
+        }
+        ensureNodeVisible(rootRef.value, revealId, options)
 
-    articleStore.clearPendingReveal()
-})
+        catalogueStore.clearPendingReveal()
+    }
+)
 </script>
 
 <style scoped>

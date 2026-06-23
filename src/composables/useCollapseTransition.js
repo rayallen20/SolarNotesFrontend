@@ -1,5 +1,5 @@
 import {nextTick, ref, watch} from "vue";
-import {useArticleStore} from "@/stores/article.js";
+import {useCatalogueStore} from "@/stores/reader/catalogue.js";
 import {prefersReducedMotion} from "@/lib/prefersReducedMotion.js";
 
 /**
@@ -19,7 +19,7 @@ export function useCollapseTransition(elementRef, isCollapsed, nodeId) {
      * */
     const isAnimating = ref(false)
 
-    const articleStore = useArticleStore()
+    const catalogueStore = useCatalogueStore()
     let token = 0
 
     /**
@@ -35,7 +35,7 @@ export function useCollapseTransition(elementRef, isCollapsed, nodeId) {
         }
 
         // 强展开或减少动态效果偏好时,不播放动画
-        if (articleStore.consumeForceExpanded(nodeId) || prefersReducedMotion()) {
+        if (catalogueStore.consumeForceExpanded(nodeId) || prefersReducedMotion()) {
             element.style.height = collapsed ? '' : 'auto'
             isAnimating.value = false
             return

@@ -61,7 +61,7 @@
 <script setup>
 import {computed, useTemplateRef} from "vue";
 import {CatalogueNodeType} from "@/lib/enum.js";
-import {useArticleStore} from "@/stores/article.js";
+import {useCatalogueStore} from "@/stores/reader/catalogue.js";
 import {useCollapseTransition} from "@/composables/useCollapseTransition.js";
 import Trapezoid from "@/components/common/Trapezoid.vue";
 
@@ -85,9 +85,9 @@ const props = defineProps({
 })
 
 /**
- * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机实例
+ * @type {import('@/stores/reader/catalogue.js').CatalogueStore} 目录状态机实例
  * */
-const articleStore = useArticleStore()
+const catalogueStore = useCatalogueStore()
 
 /**
  * @type {import('vue').ComputedRef<Boolean>} 本派生量用于标识节点是否存在子节点(决定是否递归渲染子级<ul>元素)
@@ -100,14 +100,14 @@ const hasChildren = computed(() => {
  * @type {import('vue').ComputedRef<Boolean>} 本派生量用于标识非叶节点是否处于折叠状态
  * */
 const isCollapsed = computed(() => {
-    return articleStore.isCollapsed(props.node.id)
+    return catalogueStore.isCollapsed(props.node.id)
 })
 
 /**
  * @type {import('vue').ComputedRef<Boolean>} 本派生量用于标识本节点是否为当前选中(激活)节点
  * */
 const isActive = computed(() => {
-    return props.node.id === articleStore.activeNode.id
+    return props.node.id === catalogueStore.activeNode.id
 })
 
 /**
@@ -127,10 +127,10 @@ const {isAnimating} = useCollapseTransition(childrenRef, () => isCollapsed.value
  * */
 function onRowClick() {
     if (props.node.type === CatalogueNodeType.folder && props.depth !== 0) {
-        articleStore.toggleCollapsed(props.node.id)
+        catalogueStore.toggleCollapsed(props.node.id)
     }
 
-    articleStore.selectNode(props.node.id)
+    catalogueStore.selectNode(props.node.id)
 }
 </script>
 

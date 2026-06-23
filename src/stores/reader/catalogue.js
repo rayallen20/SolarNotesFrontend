@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import {buildNodeIndex, dfsFindFirstLeafNode, getLeafContent, initCollapsedIdSet} from "@/lib/treeQuery.js";
+import {buildNodeIndex, dfsFindFirstLeafNode, initCollapsedIdSet, getLeafContent} from "@/lib/treeQuery.js";
 import {computed, ref, shallowRef} from "vue";
 import {CatalogueNodeType, FocusedPane, RenderPhase, RequestStatus} from "@/lib/enum.js";
 import {renderMarkdownToHtml} from "@/lib/markdown.js";
@@ -8,7 +8,7 @@ import {renderMarkdownToHtml} from "@/lib/markdown.js";
  * @typedef {import('@/api/catalogue.js').CatalogueNode} CatalogueNode
  * */
 
-export const useArticleStore = defineStore('article', () => {
+export const useCatalogueStore = defineStore('catalogue', () => {
     // PART1. state(仅存储不可推导的变量)
     /**
      * @type {import('vue').ShallowRef<CatalogueNode|null>} 当前书籍的目录树根节点
@@ -168,7 +168,7 @@ export const useArticleStore = defineStore('article', () => {
      * */
     function startLoading() {
         catalogue.value = null
-        activeNode.value = null
+        activeNodeId.value = null
         status.value = RequestStatus.loading
     }
 
@@ -276,7 +276,7 @@ export const useArticleStore = defineStore('article', () => {
         }
 
         // Tips: leaf必定存在于索引中(因为索引是与树同时构建的),无需判定未命中的情况
-        const {path} = nodeIndex.get(leaf.id)
+        const {path} = nodeIndex.value.get(leaf.id)
         expandFolders(path.map(node => node.id))
         selectNode(leaf.id)
         // 滚动目标 = 叶子节点的父节点
@@ -332,5 +332,5 @@ export const useArticleStore = defineStore('article', () => {
 })
 
 /**
- * @typedef {ReturnType<typeof useArticleStore>} ArticleStore 文章阅读页面状态机存储实例
+ * @typedef {ReturnType<typeof useCatalogueStore>} CatalogueStore 目录状态机存储实例
  * */

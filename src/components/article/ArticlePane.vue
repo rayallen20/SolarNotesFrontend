@@ -1,34 +1,34 @@
 <template>
-    <div class="article-pane" :class="[stateClass, {'has-mask': articleStore.hasMask}]">
+    <div class="article-pane" :class="[stateClass, {'has-mask': catalogueStore.hasMask}]">
         <div ref="body" class="article-body">
             <!-- 激活态: 梯形 + 标题 + md文档正文 -->
-            <template v-if="articleStore.renderPhase === RenderPhase.leaf">
+            <template v-if="catalogueStore.renderPhase === RenderPhase.leaf">
                 <h2 class="title">
                     <Trapezoid :height="40" :inset="7"></Trapezoid>
-                    <div class="literal">{{articleStore.activeNode.name}}</div>
+                    <div class="literal">{{catalogueStore.activeNode.name}}</div>
                 </h2>
 
-                <div class="article-content markdown-body" v-html="articleStore.articleHtml"></div>
+                <div class="article-content markdown-body" v-html="catalogueStore.articleHtml"></div>
 
-                <span class="created-at">{{articleStore.activeNode.createdAt}}</span>
+                <span class="created-at">{{catalogueStore.activeNode.createdAt}}</span>
             </template>
 
             <!-- 非激活态: 标题 + 简介 -->
             <template v-else>
-                <h2 class="title">{{articleStore.activeNode.name}}</h2>
+                <h2 class="title">{{catalogueStore.activeNode.name}}</h2>
 
-                <div class="article-content content">{{articleStore.activeNode.intro}}</div>
+                <div class="article-content content">{{catalogueStore.activeNode.intro}}</div>
 
-                <span class="created-at">{{articleStore.activeNode.createdAt}}</span>
+                <span class="created-at">{{catalogueStore.activeNode.createdAt}}</span>
             </template>
         </div>
 
         <!-- 底部按钮 -->
         <!-- 阅读态(选中节点为叶子节点 && 焦点在文章区): 按钮为胶囊形,点击按钮后将焦点转移到目录区 -->
         <button
-            v-if="articleStore.renderPhase === RenderPhase.leaf && !articleStore.hasMask"
+            v-if="catalogueStore.renderPhase === RenderPhase.leaf && !catalogueStore.hasMask"
             class="bottom-button"
-            @click="articleStore.focusCatalogue"
+            @click="catalogueStore.focusCatalogue"
         >
             <i class="iconfont icon-icon_mulu"></i>
             <span class="literal">专注目录</span>
@@ -36,9 +36,9 @@
 
         <!-- 专注态(选中节点为叶子节点 && 聚焦在目录区): 按钮水平占满文章区,点击按钮后将焦点转移到文章区 -->
         <button
-            v-else-if="articleStore.hasMask"
+            v-else-if="catalogueStore.hasMask"
             class="has-mask-button"
-            @click="articleStore.focusArticle"
+            @click="catalogueStore.focusArticle"
         >
             开启文章
         </button>
@@ -47,7 +47,7 @@
         <button
             v-else
             class="bottom-button"
-            @click="articleStore.openArticle"
+            @click="catalogueStore.openArticle"
         >
             开启文章
         </button>
@@ -58,7 +58,7 @@
 import {computed, nextTick, onBeforeUnmount, onMounted, useTemplateRef, watch} from "vue";
 import {RenderPhase} from "@/lib/enum.js";
 import SimpleBar from "simplebar";
-import {useArticleStore} from "@/stores/article.js";
+import {useCatalogueStore} from "@/stores/reader/catalogue.js";
 import Trapezoid from "@/components/common/Trapezoid.vue";
 
 defineOptions({
@@ -66,15 +66,15 @@ defineOptions({
 })
 
 /**
- * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机的实例
+ * @type {import('@/stores/reader/catalogue.js').CatalogueStore} 目录状态机的实例
  * */
-const articleStore = useArticleStore()
+const catalogueStore = useCatalogueStore()
 
 /**
  * @type {import('vue').ComputedRef<String>} 文章区当前状态对应的CSS类名
  * */
 const stateClass = computed(() => {
-    return articleStore.renderPhase === RenderPhase.leaf ? 'article-active' : 'article-inactive'
+    return catalogueStore.renderPhase === RenderPhase.leaf ? 'article-active' : 'article-inactive'
 })
 
 /**
@@ -137,19 +137,22 @@ onMounted(() => {
 
 // Tips: 从store中读到的Proxy对象会自动解包,因此在组件中拿到的就是一个普通对象,无法被watch
 // Tips: 因此要使用getter()函数的形式,才能被watch()函数监听
-watch(() => articleStore.activeNode, async () => {
-    // Tips: watch默认flush:'pre',跑在DOM更新之前,此刻旧元素仍在DOM中,可干净卸载
-    unmountOverflowScrollbars()
+watch(
+    () => catalogueStore.activeNode,
+    async () => {
+        // Tips: watch默认flush:'pre',跑在DOM更新之前,此刻旧元素仍在DOM中,可干净卸载
+        unmountOverflowScrollbars()
 
-    await nextTick()
+        await nextTick()
 
-    if (scrollbar !== null) {
-        scrollbar.recalculate()
+        if (scrollbar !== null) {
+            scrollbar.recalculate()
+        }
+
+        // DOM已更新为新的md文档对应的HTML,为新的pre/table元素挂载SimpleBar
+        mountOverflowScrollbars()
     }
-
-    // DOM已更新为新的md文档对应的HTML,为新的pre/table元素挂载SimpleBar
-    mountOverflowScrollbars()
-})
+)
 
 onBeforeUnmount(() => {
     // 组件卸载时清理pre/table元素的SimpleBar实例,以避免内存泄漏

@@ -5,21 +5,21 @@
             <span class="literal">返回太阳系</span>
         </RouterLink>
 
-        <h2>{{articleStore.breadcrumb}}</h2>
+        <h2>{{catalogueStore.breadcrumb}}</h2>
     </div>
 </template>
 
 <script setup>
-import {useArticleStore} from "@/stores/article.js";
+import {useCatalogueStore} from "@/stores/reader/catalogue.js";
 
 defineOptions({
     name: 'HeaderBar',
 })
 
 /**
- * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机实例
+ * @type {import('@/stores/reader/catalogue.js').CatalogueStore} 目录状态机实例
  * */
-const articleStore = useArticleStore()
+const catalogueStore = useCatalogueStore()
 </script>
 
 <style scoped>

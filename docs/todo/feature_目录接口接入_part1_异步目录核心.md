@@ -11,7 +11,7 @@
 > - `CatalogueNode` typedef 移入 `api/catalogue.js`(在请求处标明响应类型),`treeData.js` 及空的 `src/data/` 目录一并删除。
 >
 > **本篇触及文件**
-> - 改:`src/lib/enum.js`、`src/stores/book.js`、`src/components/panel/PanelList.vue`、`src/stores/article.js`、`src/router/index.js`、`src/pages/ArticleReader.vue`、`src/components/article/CatalogueTree.vue`、`src/components/article/TreeNode.vue`、`src/lib/treeQuery.js`
+> - 改:`src/lib/enum.js`、`src/stores/book.js`、`src/components/panel/PanelList.vue`、`src/stores/catalogue.js`、`src/router/index.js`、`src/pages/ArticleReader.vue`、`src/components/article/CatalogueTree.vue`、`src/components/article/TreeNode.vue`、`src/lib/treeQuery.js`
 > - 新增:`src/api/catalogue.js`、`src/composables/useCatalogueSync.js`
 > - 删:`src/data/treeData.js`(及空目录 `src/data/`)
 >
@@ -151,7 +151,7 @@ export {
 
 ---
 
-## §4. 改造 · `src/stores/article.js`(整文件替换)
+## §4. 改造 · `src/stores/catalogue.js`(整文件替换)
 
 **相对原文件改了什么(便于你 review)**:
 1. `catalogue / status / reloadNonce / activeNodeId / collapsedIdSet` 的初值都改成「空 / 未到货」,真正的初始化挪进 `setCatalogue()`。
@@ -507,7 +507,7 @@ export const useArticleStore = defineStore('article', () => {
 ```js
 import {watch} from "vue";
 import {useRoute} from "vue-router";
-import {useArticleStore} from "@/stores/article.js";
+import {useArticleStore} from "@/stores/catalogue.js";
 import {getCatalogue} from "@/api/catalogue.js";
 
 /**
@@ -604,7 +604,7 @@ export function useCatalogueSync() {
 <script setup>
 import HeaderBar from "@/components/article/HeaderBar.vue";
 import ReaderBody from "@/components/article/ReaderBody.vue";
-import {useArticleStore} from "@/stores/article.js";
+import {useArticleStore} from "@/stores/catalogue.js";
 import {RequestStatus} from "@/lib/enum.js";
 import {useCatalogueSync} from "@/composables/useCatalogueSync.js";
 import 'simplebar/dist/simplebar.css';
@@ -619,7 +619,7 @@ defineOptions({
 })
 
 /**
- * @type {import('@/stores/article.js').ArticleStore} 文章阅读页面状态机实例
+ * @type {import('@/stores/catalogue.js').ArticleStore} 文章阅读页面状态机实例
  * */
 const articleStore = useArticleStore()
 
@@ -688,7 +688,7 @@ useCatalogueSync()
 
 `CatalogueNode` 已在 §3 移入 `api/catalogue.js`,`treeData.js` 至此失去存在意义:**整文件删除**;`src/data/` 目录内只有这一个文件,删空后一并删掉。
 
-随之把仍指向旧位置的 typedef 引用改掉(`stores/article.js` 已在 §4 改好、`api/catalogue.js` 是定义处),还剩两处:
+随之把仍指向旧位置的 typedef 引用改掉(`stores/catalogue.js` 已在 §4 改好、`api/catalogue.js` 是定义处),还剩两处:
 
 **`src/lib/treeQuery.js` 第 4 行**(原是「转引」,改成从新位置 import):
 
