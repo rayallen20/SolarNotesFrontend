@@ -15,7 +15,7 @@ import axiosInstance from "@/lib/request.js";
 function getArticle(id) {
     const uri = '/v1/article/show'
     const param = {
-        article: {
+        catalogue: {
             id: id,
         }
     }
