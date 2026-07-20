@@ -3,8 +3,6 @@ import axiosInstance from "@/lib/request.js";
 /**
  * @typedef {Object} CatalogueNode 目录树节点
  * @property {Number} id 节点唯一id
- *      - type为folder时表示章节id
- *      - type为file时表示文章id
  * @property {String} type 节点类型:
  *      - folder: 文件夹
  *      - file: 文件
