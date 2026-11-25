@@ -26,14 +26,14 @@ export const useCatalogueStore = defineStore('catalogue', () => {
     const reloadNonce = ref(0)
 
     /**
-     * @type {import('vue').Ref<Number|null>} 当前选中节点的id
+     * @type {import('vue').Ref<String|null>} 当前选中节点的id
      *      - 响应未达之前为null
      *      - 响应到达后默认为根节点
      * */
     const activeNodeId = ref(null)
 
     /**
-     * @type {import('vue').Ref<Set<Number>>} 被折叠的非叶节点的id集合
+     * @type {import('vue').Ref<Set<String>>} 被折叠的非叶节点的id集合
      * */
     const collapsedIdSet = ref(new Set())
 
@@ -43,19 +43,19 @@ export const useCatalogueStore = defineStore('catalogue', () => {
     const focusedPane = ref(FocusedPane.catalogue)
 
     /**
-     * @type {import('vue').Ref<Number|null>} 待滚入目录面板视口的节点id
+     * @type {import('vue').Ref<String|null>} 待滚入目录面板视口的节点id
      * 由openArticle()函数负责写入;CatalogueTree watch后调用clearPendingReveal()函数清空
      * */
     const pendingRevealId = ref(null)
 
     /**
-     * @type {Set<Number>} 本集合用于存储强制展开(跳过动画)的节点id
+     * @type {Set<String>} 本集合用于存储强制展开(跳过动画)的节点id
      * */
     const forceExpandedIds = new Set()
 
     // PART2. computed(当前选中节点/状态/节点路径/面包屑导航内容)
     /**
-     * @type {import('vue').ComputedRef<Map<Number, import('@/lib/treeQuery.js').NodeIndexEntry>>} 树形结构中所有节点的id与节点及其路径的映射关系
+     * @type {import('vue').ComputedRef<Map<String, import('@/lib/treeQuery.js').NodeIndexEntry>>} 树形结构中所有节点的id与节点及其路径的映射关系
      *      - 响应未达之前为空Map
      *      - 响应到达后为id => 路径的映射关系
      * */
@@ -94,7 +94,7 @@ export const useCatalogueStore = defineStore('catalogue', () => {
     })
 
     /**
-     * @type {import('vue').ComputedRef<Number|null>} 当前选中的叶子节点的id(供ArticleStore使用)
+     * @type {import('vue').ComputedRef<String|null>} 当前选中的叶子节点的id(供ArticleStore使用)
      *      - 响应未达之前或当前选中的节点为非叶节点,则本变量值为null
      *      - 响应到达后,若当前选中节点为叶子节点则本变量值为该节点id
      * */
@@ -159,7 +159,7 @@ export const useCatalogueStore = defineStore('catalogue', () => {
     // getters
     /**
      * 本函数用于判断给定id的节点当前是否应被折叠
-     * @param {Number} id 给定节点的id
+     * @param {String} id 给定节点的id
      * @return {Boolean} true: 应被折叠; false: 应被展开
      * */
     function isCollapsed(id) {
@@ -210,7 +210,7 @@ export const useCatalogueStore = defineStore('catalogue', () => {
      * 本函数用于选中节点时,按节点类型转移焦点:
      *      - 选中节点为叶子节点: 聚焦文章区
      *      - 选中节点为非叶节点: 聚焦目录区
-     * @param {Number} id 被选中节点的id
+     * @param {String} id 被选中节点的id
      * */
     function selectNode(id) {
         activeNodeId.value = id
@@ -225,7 +225,7 @@ export const useCatalogueStore = defineStore('catalogue', () => {
 
     /**
      * 本函数用于切换给定非叶节点的折叠状态
-     * @param {Number} id 给定非叶节点的id
+     * @param {String} id 给定非叶节点的id
      * */
     function toggleCollapsed(id) {
         if (collapsedIdSet.value.has(id)) {
@@ -238,7 +238,7 @@ export const useCatalogueStore = defineStore('catalogue', () => {
 
     /**
      * 本函数用于展开一组非叶节点
-     * @param {Array<Number>} ids 非叶节点id列表
+     * @param {Array<String>} ids 非叶节点id列表
      * */
     function expandFolders(ids) {
         ids.forEach(id => {
@@ -252,7 +252,7 @@ export const useCatalogueStore = defineStore('catalogue', () => {
 
     /**
      * 本函数用于消费强制展开动画的非叶节点id
-     * @param {Number} id 非叶节点id
+     * @param {String} id 非叶节点id
      * @return {Boolean}
      *      - true: 给定的非叶节点需要强制展开
      *      - false: 给定的非叶节点不需要强制展开

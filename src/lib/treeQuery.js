@@ -13,7 +13,7 @@ import {CatalogueNodeType} from "@/lib/enum.js";
 /**
  * 本函数以DFS方式在给定的树形结构中查找给定id的节点及该节点的路径
  * @param {CatalogueNode} root 树形结构根节点
- * @param {Number} targetId 目标节点的id
+ * @param {String} targetId 目标节点的id
  * @return {{node: CatalogueNode|null, path: Array<CatalogueNode>}}
  *      - node: 命中节点
  *      - path: 路径
@@ -50,7 +50,7 @@ function dfsFindNodeWithPath(root, targetId) {
  *          - 校验该节点是否存在/是否为非叶节点/是否存在子节点
  *          - 若上述校验通过,则调用dfsFirstLeaf函数查找第1个叶子节点
  * @param {CatalogueNode} root 树形结构根节点
- * @param {Number} folderId 给定的非叶节点的节点id
+ * @param {String} folderId 给定的非叶节点的节点id
  * @return {CatalogueNode|null}
  *      - 若找到,则返回第1个叶子节点
  *      - 若folderId指代的节点:
@@ -96,7 +96,7 @@ function dfsFirstLeaf(node) {
 /**
  * 本函数用于建立节点id与节点及其路径的映射关系,用于以O(1)的时间复杂度查找节点及其路径
  * @param {CatalogueNode} root 树形结构根节点
- * @return {Map<Number, NodeIndexEntry>} 节点映射,其中:
+ * @return {Map<String, NodeIndexEntry>} 节点映射,其中:
  *      - key: 节点id
  *      - value: 节点及其路径
  * */
@@ -127,7 +127,7 @@ function buildNodeIndex(root) {
  *      - 根节点展开
  *      - depth ≥ 1的非叶节点折叠
  * @param {CatalogueNode} root 树形结构根节点
- * @return {Set<Number>} 初态应被折叠节点的id集合
+ * @return {Set<String>} 初态应被折叠节点的id集合
  * */
 function initCollapsedIdSet(root) {
     const collapsedIdSet = new Set()

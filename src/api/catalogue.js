@@ -2,7 +2,7 @@ import axiosInstance from "@/lib/request.js";
 
 /**
  * @typedef {Object} CatalogueNode 目录树节点
- * @property {Number} id 节点唯一id
+ * @property {String} id 节点唯一id
  * @property {String} type 节点类型:
  *      - folder: 文件夹
  *      - file: 文件
@@ -14,7 +14,7 @@ import axiosInstance from "@/lib/request.js";
 
 /**
  * 本函数用于请求指定书籍目录树API
- * @param {Number} id 书籍id
+ * @param {String} id 书籍 ID 的十进制字符串
  * @return {Promise<{catalogue: CatalogueNode}>} 含目录树根节点的Promise对象
  * */
 function getCatalogue(id) {

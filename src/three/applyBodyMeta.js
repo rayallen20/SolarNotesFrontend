@@ -3,7 +3,7 @@ import {planets} from "@/three/planet/index.js";
 
 /**
  * @typedef {Object} BodyMeta 后端API中返回的单个天体简介对象(含id)
- * @property {Number} id 天体id
+ * @property {String} id 天体 ID 的十进制字符串
  * @property {String} name 天体名称(与前端的config.name值完全相同,用作匹配键)
  * @property {String} title label中的标题部分
  * @property {String} intro label中的介绍部分

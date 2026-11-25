@@ -10,7 +10,7 @@ import {prefersReducedMotion} from "@/lib/prefersReducedMotion.js";
  *      - 叶子节点的elementRef为null,watch()会直接返回
  * @param {import('vue').Ref<HTMLUListElement|null>} elementRef 被添加过渡效果的ul元素的ref
  * @param {() => Boolean} isCollapsed 读取当前elementRef折叠状态的getter
- * @param {Number} nodeId 要展开/折叠的节点id
+ * @param {String} nodeId 要展开/折叠的节点id
  * @return {{isAnimating: import('vue').Ref<Boolean>}} isAnimating: 用于让组件判定是否绑定.animating类
  * */
 export function useCollapseTransition(elementRef, isCollapsed, nodeId) {

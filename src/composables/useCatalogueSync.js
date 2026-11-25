@@ -29,7 +29,7 @@ export function useCatalogueSync() {
             // 进入loading状态,重新请求API
             catalogueStore.startLoading()
             try {
-                const {catalogue} = await getCatalogue(Number(bookId))
+                const {catalogue} = await getCatalogue(bookId)
                 // 竟态条件: 在await期间,路由可能已经切换,因此仅在路由中参数仍为请求时使用的值时,才写入catalogueStore
                 if (route.params.id === bookId) {
                     catalogueStore.setCatalogue(catalogue)

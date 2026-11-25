@@ -3,7 +3,7 @@ import {prefersReducedMotion} from "@/lib/prefersReducedMotion.js";
 /**
  * 本函数用于在目录区容器内将给定的节点滚动进视口
  * @param {HTMLDivElement|null} catalogueElement 目录区容器元素
- * @param {Number|null} targetNodeId 目标节点id
+ * @param {String|null} targetNodeId 目标节点id
  * @param {{behavior: ScrollBehavior, block: 'center'|'nearest'}} options 滚动选项:
  *      - behavior: 滚动行为,可选值为'auto'或'smooth'
  *      - block: 垂直对齐方式,可选值为'center'/'nearest'
